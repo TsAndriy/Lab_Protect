@@ -1,0 +1,33 @@
+<!-- labs/templates/base.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Захист інформації{% endblock %}</title>
+
+    <link rel="stylesheet" href="../static/css/main.css">
+    {% block extra_css %}
+
+    {% endblock %}
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Захист інформації (Цинцар Андрій ШІ-34)</h1>
+            <p>Лабораторні роботи | Варіант 17</p>
+        </header>
+
+        <nav>
+            <a href="/">Головна</a>
+            <a href="/lab1/">ЛР1</a>
+        </nav>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

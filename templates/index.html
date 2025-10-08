@@ -1,0 +1,24 @@
+<!-- labs/templates/index.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h2>Виберіть лабораторну роботу</h2>
+
+<div class="grid">
+    {% for lab in labs %}
+    <div class="card">
+        <h3>Лабораторна робота №{{ lab.number }}</h3>
+        <p style="margin: 15px 0; color: #6b7280;">{{ lab.description }}</p>
+
+        <div style="margin-top: 20px;">
+            <a href="{{ lab.url }}" class="btn">
+                Перейти до роботи
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
