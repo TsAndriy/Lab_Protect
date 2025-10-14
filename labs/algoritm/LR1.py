@@ -129,7 +129,7 @@ class CesaroTest:
         # Фінальна оцінка
         if coprime_count > 0:
             probability = coprime_count / num_pairs
-            pi_estimate = math.sqrt(6.0 / probability) #Тест чезеро 6/Pi^2
+            pi_estimate = math.sqrt(6.0 / probability) #Тест чезеро 6/Pi^2a
             error = abs(pi_estimate - math.pi)
             return pi_estimate, error, pi_estimates
 
