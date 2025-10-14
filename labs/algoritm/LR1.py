@@ -5,25 +5,15 @@
 import math
 import random
 from typing import List, Tuple, Dict, Any
-import time
-
 
 class LinearCongruentialGenerator:
-    """
-    Генератор псевдовипадкових чисел за методом лінійного порівняння
-    X_{n+1} = (a * X_n + c) mod m
-    """
+    #Генератор псевдовипадкових чисел за методом лінійного порівняння
 
     def __init__(self, m: int, a: int, c: int, x0: int):
-        """
-        Ініціалізація генератора
-
-        Args:
-            m: модуль порівняння (m > 0)
-            a: множник (0 <= a < m)
-            c: приріст (0 <= c < m)
-            x0: початкове значення (0 <= x0 < m)
-        """
+        # m: модуль порівняння (m > 0)
+        # a: множник (0 <= a < m)
+        # c: приріст (0 <= c < m)
+        # x0: початкове значення (0 <= x0 < m)
         self.m = m
         self.a = a
         self.c = c
@@ -32,26 +22,19 @@ class LinearCongruentialGenerator:
         self.history = []
 
     def reset(self):
-        """Скидання генератора до початкового стану"""
+        #Скидання генератора до початкового стану
         self.current = self.x0
         self.history = []
 
     def next(self) -> int:
-        """Генерація наступного псевдовипадкового числа"""
+        #енерація наступного псевдовипадкового числа
         self.current = (self.a * self.current + self.c) % self.m
         self.history.append(self.current)
         return self.current
 
     def generate_sequence(self, n: int) -> List[int]:
-        """
-        Генерація послідовності псевдовипадкових чисел
+        #Генерація послідовності псевдовипадкових чисел
 
-        Args:
-            n: кількість чисел для генерації
-
-        Returns:
-            Список згенерованих чисел
-        """
         self.reset()
         sequence = []
         for _ in range(n):
@@ -59,15 +42,10 @@ class LinearCongruentialGenerator:
         return sequence
 
     def find_period(self, max_iterations: int = 1000000000) -> Tuple[int, bool]: # change
-        """
-        Знаходження періоду функції генерації
+        #Знаходження періоду функції генерації
+        #max_iterations: максимальна кількість ітерацій для пошуку
+        #Tuple (період, чи знайдено повний період)
 
-        Args:
-            max_iterations: максимальна кількість ітерацій для пошуку
-
-        Returns:
-            Tuple (період, чи знайдено повний період)
-        """
         self.reset()
         seen = {self.x0: 0}
 
@@ -81,15 +59,9 @@ class LinearCongruentialGenerator:
         return max_iterations, False
 
     def get_statistics(self, sequence: List[int]) -> Dict[str, Any]:
-        """
-        Отримання статистики послідовності
 
-        Args:
-            sequence: послідовність для аналізу
+        #Отримання статистики послідовності
 
-        Returns:
-            Словник зі статистичними показниками
-        """
         if not sequence:
             return {}
 
@@ -118,39 +90,23 @@ class LinearCongruentialGenerator:
 
 
 def gcd(a: int, b: int) -> int:
-    """
-    Алгоритм Евкліда для знаходження НСД
+    #Алгоритм Евкліда для знаходження Найбільшого спільного дільника
 
-    Args:
-        a, b: цілі числа
-
-    Returns:
-        Найбільший спільний дільник
-    """
     while b:
         a, b = b, a % b
     return a
 
 
 class CesaroTest:
-    """
-    Тестування генератора на основі теореми Чезаро
-    Ймовірність того, що gcd(x, y) = 1 для двох випадкових чисел дорівнює 6/π²
-    """
-
+    # Тестування генератора на основі теореми Чезаро
     @staticmethod
     def estimate_pi(generator: LinearCongruentialGenerator,
-                   num_pairs: int = 10000) -> Tuple[float, float, List[float]]:
-        """
-                Оцінка числа π за допомогою теореми Чезаро
+                   num_pairs: int = 10000000) -> Tuple[float, float, List[float]]:
 
-                Args:
-                    generator: генератор псевдовипадкових чисел
-                    num_pairs: кількість пар для тестування
+        # generator: генератор псевдовипадкових чисел
+        # num_pairs: кількість пар для тестування
+        # Tuple (оцінка Pi, відхилення від початкового Pi, історія оцінок)
 
-                Returns:
-                    Tuple (оцінка π, відхилення від справжнього π, історія оцінок)
-                """
         coprime_count = 0
         pi_estimates = []
 
@@ -178,16 +134,9 @@ class CesaroTest:
         return 0, float('inf'), pi_estimates
 
     @staticmethod
-    def compare_with_system_random(num_pairs: int = 10000) -> Dict[str, Any]:
-        """
-        Порівняння з системним генератором випадкових чисел (random)
-
-        Args:
-            num_pairs: кількість пар для тестування
-
-        Returns:
-            Результати порівняння
-        """
+    def compare_with_system_random(num_pairs: int = 10000000) -> Dict[str, Any]:
+        #Порівняння з системним генератором випадкових чисел (random)
+        #num_pairs: кількість пар для тестування
         coprime_count = 0
         max_val = 2 ** 31 - 1
 
@@ -210,20 +159,12 @@ class CesaroTest:
 
 
 class FrequencyTest:
-    """Частотний тест для перевірки випадковості"""
+    #Частотний тест для перевірки випадковості
 
     @staticmethod
     def test_bits(sequence: List[int], bit_length: int = 32) -> Dict[str, Any]:
-        """
-        Тестування розподілу бітів у послідовності
-
-        Args:
-            sequence: послідовність чисел
-            bit_length: довжина представлення числа в бітах
-
-        Returns:
-            Результати частотного тесту
-        """
+        #sequence: послідовність чисел
+        #bit_length: довжина представлення числа в бітах
         ones_count = 0
         zeros_count = 0
 
@@ -234,12 +175,12 @@ class FrequencyTest:
 
         total_bits = ones_count + zeros_count
         if total_bits == 0:
-            return {'error': 'Empty sequence'}
+            return {'error': 'Порожня послідовність'}
 
         ones_ratio = ones_count / total_bits
         zeros_ratio = zeros_count / total_bits
 
-        # Ідеальне співвідношення - 0.5
+        # Cпіввідношення - 0.5 на 0.5
         chi_square = ((ones_count - total_bits / 2) ** 2 +
                       (zeros_count - total_bits / 2) ** 2) / (total_bits / 2)
 
@@ -254,19 +195,10 @@ class FrequencyTest:
 
 
 class RunsTest:
-    """Тест послідовностей (runs test)"""
-
+    # Тест на послідовності однакових бітів
     @staticmethod
     def test(sequence: List[int]) -> Dict[str, Any]:
-        """
-        Тест послідовностей однакових бітів
 
-        Args:
-            sequence: послідовність чисел
-
-        Returns:
-            Результати тесту послідовностей
-        """
         # Перетворення на бітову послідовність
         bits = []
         for num in sequence:
@@ -274,7 +206,7 @@ class RunsTest:
             bits.extend([int(b) for b in binary])
 
         if len(bits) < 2:
-            return {'error': 'Sequence too short'}
+            return {'error': 'Послідовність коротка'}
 
         runs = 1  # кількість послідовностей
         for i in range(1, len(bits)):
@@ -286,7 +218,7 @@ class RunsTest:
         zeros = n - ones
 
         if ones == 0 or zeros == 0:
-            return {'error': 'All bits are the same'}
+            return {'error': 'Біто однакові'}
 
         # Очікувана кількість послідовностей
         expected_runs = (2 * ones * zeros) / n + 1
@@ -295,7 +227,7 @@ class RunsTest:
         variance = (2 * ones * zeros * (2 * ones * zeros - n)) / (n ** 2 * (n - 1))
 
         if variance <= 0:
-            return {'error': 'Invalid variance'}
+            return {'error': 'Невірна дисперсія'}
 
         # Z-статистика
         z = (runs - expected_runs) / math.sqrt(variance)
@@ -308,20 +240,20 @@ class RunsTest:
             'is_random': abs(z) < 1.96  # критичне значення для p=0.05
         }
 
-    # Конфігурація для варіанту 17
-    # VARIANT_17_CONFIG = {
-    #    'm': 2 ** 26 - 1,  # 67108863
-    #    'a': 13 ** 3,  # 2197
-    #    'c': 1597,
-    #    'x0': 13
-    #}
+VARIANT_17_CONFIG = {
+    'm': 2**26 - 1,  # 67108863
+    'a': 13**3,      # 2197
+    'c': 1597,
+    'x0': 13
+}
 
-    #def create_variant_17_generator() -> LinearCongruentialGenerator:
-    #    """Створення генератора для варіанту 17"""
-    #    config = VARIANT_17_CONFIG
-    #    return LinearCongruentialGenerator(
-    #        m=config['m'],
-    #        a=config['a'],
-    #        c=config['c'],
-    #        x0=config['x0']
-    #    )
+
+def create_variant_17_generator() -> LinearCongruentialGenerator:
+    """Створення генератора для варіанту 17"""
+    config = VARIANT_17_CONFIG
+    return LinearCongruentialGenerator(
+        m=config['m'],
+        a=config['a'],
+        c=config['c'],
+        x0=config['x0']
+    )

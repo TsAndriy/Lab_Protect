@@ -1,20 +1,16 @@
 import math
-from urllib.parse import parse_qs
-from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import io
-from typing import Dict, Any
 
 from .algoritm.LR1 import (
     LinearCongruentialGenerator,
     CesaroTest,
     FrequencyTest,
-    RunsTest)
-# Create your views here.
+    RunsTest, VARIANT_17_CONFIG)
 def index(request):
-    """Головна сторінка зі списком лабораторних робіт"""
     labs = [
         {
             'number': 1,
@@ -37,38 +33,38 @@ def index(request):
     return render(request, 'index.html', context)
 
 def lab1_prng(request):
-    """Сторінка лабораторної роботи №1 - ГПВЧ"""
     context = {
         'title': 'Лабораторна робота 1',
+        'config': VARIANT_17_CONFIG
     }
     return render(request, 'labs/lab1/index.html', context)
 
 
 @csrf_exempt
 def generate_prng(request):
-    """API для генерації псевдовипадкових чисел"""
+    #Генерація псевдовипадкових чисел
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
 
             # Отримання параметрів
-            m = int(data.get('m'))
-            a = int(data.get('a'))
-            c = int(data.get('c'))
-            x0 = int(data.get('x0'))
+            m = int(data.get('m', VARIANT_17_CONFIG['m']))
+            a = int(data.get('a', VARIANT_17_CONFIG['a']))
+            c = int(data.get('c', VARIANT_17_CONFIG['c'] ))
+            x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
             count = int(data.get('count', 200))
 
             # Валідація
             if m <= 0:
-                return JsonResponse({'error': 'Модуль m повинен бути > 0'}, status=400)
+                return JsonResponse({'error': 'Модуль m повинен бути > 0'})
             if not (0 <= a < m):
-                return JsonResponse({'error': f'Множник a повинен бути в діапазоні [0, {m})'}, status=400)
+                return JsonResponse({'error': f'Множник a повинен бути в діапазоні [0, {m})'})
             if not (0 <= c < m):
-                return JsonResponse({'error': f'Приріст c повинен бути в діапазоні [0, {m})'}, status=400)
+                return JsonResponse({'error': f'Приріст c повинен бути в діапазоні [0, {m})'})
             if not (0 <= x0 < m):
-                return JsonResponse({'error': f'Початкове значення x0 повинен бути в діапазоні [0, {m})'}, status=400)
-            if count <= 0 or count > 10000:
-                return JsonResponse({'error': 'Кількість чисел повинна бути від 1 до 10000'}, status=400)
+                return JsonResponse({'error': f'Початкове значення x0 повинен бути в діапазоні [0, {m})'})
+            if count <= 0 or count > 10000000:
+                return JsonResponse({'error': 'Кількість чисел повинна бути від 1 до 10000000'})
 
             # Генерація
             generator = LinearCongruentialGenerator(m, a, c, x0)
@@ -79,7 +75,7 @@ def generate_prng(request):
 
             response = {
                 'success': True,
-                'sequence': sequence[:1000],  # Обмеження для відображення
+                'sequence': sequence,  # Обмеження для відображення
                 'count': len(sequence),
                 'statistics': stats,
                 'parameters': {
@@ -93,24 +89,24 @@ def generate_prng(request):
             return JsonResponse(response)
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({'error': str(e)})
 
-    return JsonResponse({'error': 'Помилка'}, status=405)
+    return JsonResponse({'error': 'Помилка'})
 
 
 @csrf_exempt
 def test_period(request):
-    """API для тестування періоду генератора"""
+    #Тестування періоду генератора
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
 
             # Отримання параметрів
-            m = int(data.get('m'))
-            a = int(data.get('a'))
-            c = int(data.get('c'))
-            x0 = int(data.get('x0'))
-            max_iterations = min(int(data.get('max_iterations', 100000)), 1000000000)#change
+            m = int(data.get('m', VARIANT_17_CONFIG['m']))
+            a = int(data.get('a', VARIANT_17_CONFIG['a']))
+            c = int(data.get('c', VARIANT_17_CONFIG['c'] ))
+            x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
+            max_iterations = int(data.get('max_iterations'))#change
 
             # Генератор
             generator = LinearCongruentialGenerator(m, a, c, x0)
@@ -143,30 +139,30 @@ def test_period(request):
             return JsonResponse(response)
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({'error': str(e)})
 
-    return JsonResponse({'error': 'Помилка'}, status=405)
+    return JsonResponse({'error': 'Помилка'})
 
 
 @csrf_exempt
 def test_cesaro(request):
-    """API для тестування генератора за теоремою Чезаро"""
+    #Тестування генератора за теоремою Чезаро
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
 
             # Отримання параметрів
-            m = int(data.get('m'))
-            a = int(data.get('a'))
-            c = int(data.get('c'))
-            x0 = int(data.get('x0'))
+            m = int(data.get('m', VARIANT_17_CONFIG['m']))
+            a = int(data.get('a', VARIANT_17_CONFIG['a']))
+            c = int(data.get('c', VARIANT_17_CONFIG['c'] ))
+            x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
             num_pairs = min(int(data.get('num_pairs', 10000)), 50000)
 
-            # Тестування нашого генератора
+            # Тестування лінійного генератора
             generator = LinearCongruentialGenerator(m, a, c, x0)
             pi_estimate, error, pi_history = CesaroTest.estimate_pi(generator, num_pairs)
 
-            # Тестування системного генератора
+            # Тестування системного генератора (random)
             system_results = CesaroTest.compare_with_system_random(num_pairs)
 
             response = {
@@ -175,7 +171,6 @@ def test_cesaro(request):
                     'pi_estimate': pi_estimate,
                     'error': error,
                     'error_percentage': (error / math.pi) * 100,
-                    'pi_history': pi_history[-20:] if pi_history else []  # Останні 20 оцінок
                 },
                 'system_generator': {
                     'pi_estimate': system_results['pi_estimate'],
@@ -189,23 +184,23 @@ def test_cesaro(request):
             return JsonResponse(response)
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({'error': str(e)})
 
-    return JsonResponse({'error': 'Помилка'}, status=405)
+    return JsonResponse({'error': 'Помилка'})
 
 
 @csrf_exempt
 def test_randomness(request):
-    """API для комплексного тестування випадковості"""
+    #Комплексне тестування випадковості
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
 
             # Отримання параметрів
-            m = int(data.get('m'))
-            a = int(data.get('a'))
-            c = int(data.get('c'))
-            x0 = int(data.get('x0'))
+            m = int(data.get('m', VARIANT_17_CONFIG['m']))
+            a = int(data.get('a', VARIANT_17_CONFIG['a']))
+            c = int(data.get('c', VARIANT_17_CONFIG['c'] ))
+            x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
             count = min(int(data.get('count', 1000)), 10000)
 
             # Генерація послідовності
@@ -224,10 +219,6 @@ def test_randomness(request):
                     'frequency': frequency_results,
                     'runs': runs_results
                 },
-                'overall_result': 'Пройдено' if (
-                        frequency_results.get('is_random', False) and
-                        runs_results.get('is_random', False)
-                ) else 'Не пройдено',
                 'parameters': {
                     'm': m,
                     'a': a,
@@ -240,37 +231,32 @@ def test_randomness(request):
             return JsonResponse(response)
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({'error': str(e)})
 
-    return JsonResponse({'error': 'Помилка'}, status=405)
+    return JsonResponse({'error': 'Помилка'})
 
 @csrf_exempt
 def export_results(request):
     if request.method != 'POST':
-        return JsonResponse({'error': 'Помилка'}, status=405)
+        return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)
 
-    # Беремо параметри з POST
-    import json
-    data = {}
-    if 'data' in request.POST:
-        try:
-            data = json.loads(request.POST['data'])
-        except:
-            return JsonResponse({'error': 'Невірний JSON файл'})
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Невірний JSON'}, status=400)
 
-    m = int(data.get('m'))
-    a = int(data.get('a'))
-    c = int(data.get('c'))
-    x0 = int(data.get('x0'))
+    m = int(data.get('m', VARIANT_17_CONFIG['m']))
+    a = int(data.get('a', VARIANT_17_CONFIG['a']))
+    c = int(data.get('c', VARIANT_17_CONFIG['c']))
+    x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
     count = int(data.get('count', 100))
 
-    # генерація послідовності
+    # Генерація послідовності
     generator = LinearCongruentialGenerator(m, a, c, x0)
     sequence = generator.generate_sequence(count)
 
-    # формуємо CSV
+    # Формуємо txt файл в пам'яті
     output = io.StringIO()
-
     output.write(f"Модуль порівняння m = {m}\n")
     output.write(f"Множник a = {a}\n")
     output.write(f"Приріст c = {c}\n")
@@ -278,17 +264,15 @@ def export_results(request):
     output.write("-" * 20 + "\n")
     output.write(f"Кількість змінних = {len(sequence)}\n")
     output.write("-" * 20 + "\n")
-    # Записуємо заголовок таблиці
     output.write("Індекс\tЗначення змінної\n")
 
-    # Записуємо згенеровані дані
     for i, val in enumerate(sequence, 1):
         output.write(f"{i}\t{val}\n")
 
     file_content = output.getvalue()
     output.close()
 
-    # Створюємо відповідь сервера
-    resp = HttpResponse(file_content, content_type='text/plain')
-    resp['Content-Disposition'] = 'attachment; filename="result_lr1.txt"'
-    return resp
+    # Створюємо HTTP-відповідь із правильними заголовками
+    response = HttpResponse(file_content, content_type='text/plain; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="lr1_lin.txt"'
+    return response

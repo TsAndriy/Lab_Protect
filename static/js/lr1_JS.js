@@ -59,7 +59,7 @@ async function generateNumbers() {
 
             // Послідовність
             const seqDiv = document.getElementById('gen-sequence');
-            seqDiv.innerHTML = result.sequence.slice(0, 500).join(', ');
+            seqDiv.innerHTML = result.sequence.slice(0, 50000000).join(', ');
         } else {
             alert('Помилка: ' + result.error);
         }
@@ -154,7 +154,7 @@ async function testCesaro() {
             document.getElementById('cesaro-stats').innerHTML = `
                 <div class="grid">
                     <div class="card">
-                        <h4>Наш генератор</h4>
+                        <h4>Генератор Леменова</h4>
                         <table>
                             <tr>
                                 <td>Оцінка Pi:</td>
@@ -303,6 +303,9 @@ async function testRandomness() {
 }
 
 // Функція експорту результатів
+// Щоб відкрити саме діалог "Save As" і дозволити користувачу вибрати місце збереження,
+// використаємо сучасний File System Access API (працює у Chrome, Edge, Opera)
+
 async function exportResults() {
     const data = {
         m: parseInt(document.getElementById('gen-m').value),
@@ -312,18 +315,55 @@ async function exportResults() {
         count: parseInt(document.getElementById('gen-count').value)
     };
 
-    // Створення форми для відправки POST запиту
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/lab1/export/';
+    try {
+        // Надсилаємо POST запит до Django для створення файлу
+        const response = await fetch('/lab1/export/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
 
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'data';
-    input.value = JSON.stringify(data);
+        if (!response.ok) {
+            const errorResult = await response.json();
+            throw new Error(errorResult.error || 'Не вдалося створити файл');
+        }
 
-    form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+        const fileContent = await response.text();
+
+        // Викликаємо системний Save File Dialog через File System Access API
+        if ('showSaveFilePicker' in window) {
+            const options = {
+                suggestedName: 'lr1_lin.txt',
+                types: [
+                    {
+                        description: 'Text file',
+                        accept: { 'text/plain': ['.txt'] }
+                    }
+                ]
+            };
+
+            const handle = await window.showSaveFilePicker(options);
+            const writable = await handle.createWritable();
+            await writable.write(fileContent);
+            await writable.close();
+
+            alert('Файл успішно збережено!');
+        } else {
+            // Якщо браузер не підтримує API — fallback на звичайне завантаження
+            const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'lr1_lin.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            alert('Ваш браузер не підтримує Save File Dialog, файл автоматично завантажено.');
+        }
+
+    } catch (error) {
+        alert('Помилка експорту: ' + error.message);
+    }
 }
+

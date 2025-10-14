@@ -6,10 +6,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Головна сторінка
     path('', views.index, name='index'),
 
-    # Лабораторна робота №1 - ГПВЧ
+    # Лабораторна робота 1
     path('lab1/', views.lab1_prng, name='lab1'),
     path('lab1/generate/', views.generate_prng, name='generate_prng'),
     path('lab1/period/', views.test_period, name='test_period'),
