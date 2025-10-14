@@ -55,11 +55,15 @@ async function generateNumbers() {
                     <div class="stat-label">Мін / Макс</div>
                     <div class="stat-value">${stats.min} / ${stats.max}</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-label">Час генерації (мс)</div>
+                    <div class="stat-value">${result.generation_time_ms.toFixed(2)}</div>
+                </div>
             `;
 
             // Послідовність
             const seqDiv = document.getElementById('gen-sequence');
-            seqDiv.innerHTML = result.sequence.slice(0, 50000000).join(', ');
+            seqDiv.innerHTML = result.sequence.join(', '); // Обмеження для відображення
         } else {
             alert('Помилка: ' + result.error);
         }
@@ -116,6 +120,10 @@ async function testPeriod() {
                         <td>Оцінка якості</td>
                         <td><span class="badge ${badgeClass}">${result.quality}</span></td>
                     </tr>
+                    <tr>
+                        <td>Час виконання (мс)</td>
+                        <td><strong>${result.execution_time_ms.toFixed(2)}</strong></td>
+                    </tr>
                 </table>
             `;
         } else {
@@ -154,18 +162,18 @@ async function testCesaro() {
             document.getElementById('cesaro-stats').innerHTML = `
                 <div class="grid">
                     <div class="card">
-                        <h4>Генератор Леменова</h4>
+                        <h4>Генератор Лемера</h4>
                         <table>
                             <tr>
                                 <td>Оцінка Pi:</td>
                                 <td><strong>${result.our_generator.pi_estimate.toFixed(6)}</strong></td>
                             </tr>
                             <tr>
-                                <td>Похибка:</td>
+                                <td>Похибка (Pi - Оцінка):</td>
                                 <td>${result.our_generator.error.toFixed(6)}</td>
                             </tr>
                             <tr>
-                                <td>Похибка %:</td>
+                                <td>Похибка % (Відносно Pi):</td>
                                 <td>${ourError.toFixed(3)}%</td>
                             </tr>
                         </table>
@@ -174,15 +182,15 @@ async function testCesaro() {
                         <h4>Системний генератор</h4>
                         <table>
                             <tr>
-                                <td>Оцінка π:</td>
+                                <td>Оцінка Pi:</td>
                                 <td><strong>${result.system_generator.pi_estimate.toFixed(6)}</strong></td>
                             </tr>
                             <tr>
-                                <td>Похибка:</td>
+                                <td>Похибка (Pi - Оцінка):</td>
                                 <td>${result.system_generator.error.toFixed(6)}</td>
                             </tr>
                             <tr>
-                                <td>Похибка %:</td>
+                                <td>Похибка % (Відносно Pi):</td>
                                 <td>${sysError.toFixed(3)}%</td>
                             </tr>
                         </table>
@@ -192,6 +200,8 @@ async function testCesaro() {
                     <strong>Pi:</strong> ${result.actual_pi}
                     <br>
                     <strong>Кількість пар:</strong> ${result.num_pairs}
+                    <br>
+                    <strong>Час виконання:</strong> ${result.execution_time_ms.toFixed(2)} мс
                 </div>
             `;
         } else {
@@ -293,6 +303,10 @@ async function testRandomness() {
 
             html += '</div>';
 
+            html += `<div class="alert alert-info" style="margin-top: 20px;">
+                        <strong>Час виконання:</strong> ${result.execution_time_ms.toFixed(2)} мс
+                     </div>`;
+
             document.getElementById('random-stats').innerHTML = html;
         } else {
             alert('Помилка: ' + result.error);
@@ -303,9 +317,6 @@ async function testRandomness() {
 }
 
 // Функція експорту результатів
-// Щоб відкрити саме діалог "Save As" і дозволити користувачу вибрати місце збереження,
-// використаємо сучасний File System Access API (працює у Chrome, Edge, Opera)
-
 async function exportResults() {
     const data = {
         m: parseInt(document.getElementById('gen-m').value),
@@ -330,7 +341,7 @@ async function exportResults() {
 
         const fileContent = await response.text();
 
-        // Викликаємо системний Save File Dialog через File System Access API
+        // Використовуємо File System Access API якщо доступно
         if ('showSaveFilePicker' in window) {
             const options = {
                 suggestedName: 'lr1_lin.txt',
@@ -349,7 +360,7 @@ async function exportResults() {
 
             alert('Файл успішно збережено!');
         } else {
-            // Якщо браузер не підтримує API — fallback на звичайне завантаження
+            // Fallback для інших браузерів
             const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -366,4 +377,3 @@ async function exportResults() {
         alert('Помилка експорту: ' + error.message);
     }
 }
-

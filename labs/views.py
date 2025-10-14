@@ -1,6 +1,7 @@
 import math
+import time  # Імпортуємо модуль time
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse, FileResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import io
@@ -10,6 +11,8 @@ from .algoritm.LR1 import (
     CesaroTest,
     FrequencyTest,
     RunsTest, VARIANT_17_CONFIG)
+
+
 def index(request):
     labs = [
         {
@@ -32,6 +35,7 @@ def index(request):
     }
     return render(request, 'index.html', context)
 
+
 def lab1_prng(request):
     context = {
         'title': 'Лабораторна робота 1',
@@ -42,15 +46,16 @@ def lab1_prng(request):
 
 @csrf_exempt
 def generate_prng(request):
-    #Генерація псевдовипадкових чисел
+    # Генерація псевдовипадкових чисел
     if request.method == 'POST':
         try:
+            start_time = time.time()  # Початок вимірювання часу
             data = json.loads(request.body)
 
             # Отримання параметрів
             m = int(data.get('m', VARIANT_17_CONFIG['m']))
             a = int(data.get('a', VARIANT_17_CONFIG['a']))
-            c = int(data.get('c', VARIANT_17_CONFIG['c'] ))
+            c = int(data.get('c', VARIANT_17_CONFIG['c']))
             x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
             count = int(data.get('count', 200))
 
@@ -73,11 +78,15 @@ def generate_prng(request):
             # Статистика
             stats = generator.get_statistics(sequence)
 
+            end_time = time.time()  # Кінець вимірювання часу
+            duration_ms = (end_time - start_time) * 1000  # Розрахунок часу в мілісекундах
+
             response = {
                 'success': True,
-                'sequence': sequence,  # Обмеження для відображення
+                'sequence': sequence,
                 'count': len(sequence),
                 'statistics': stats,
+                'generation_time_ms': duration_ms,  # Додаємо час генерації у відповідь
                 'parameters': {
                     'm': m,
                     'a': a,
@@ -96,23 +105,27 @@ def generate_prng(request):
 
 @csrf_exempt
 def test_period(request):
-    #Тестування періоду генератора
+    # Тестування періоду генератора
     if request.method == 'POST':
         try:
+            start_time = time.time()
             data = json.loads(request.body)
 
             # Отримання параметрів
             m = int(data.get('m', VARIANT_17_CONFIG['m']))
             a = int(data.get('a', VARIANT_17_CONFIG['a']))
-            c = int(data.get('c', VARIANT_17_CONFIG['c'] ))
+            c = int(data.get('c', VARIANT_17_CONFIG['c']))
             x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
-            max_iterations = int(data.get('max_iterations'))#change
+            max_iterations = int(data.get('max_iterations'))
 
             # Генератор
             generator = LinearCongruentialGenerator(m, a, c, x0)
 
             # Знаходження періоду
             period, found = generator.find_period(max_iterations)
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
 
             # Оцінка якості
             max_period = m if c != 0 else m - 1
@@ -128,6 +141,7 @@ def test_period(request):
                 'max_possible_period': max_period,
                 'quality': quality,
                 'percentage': (period / max_period) * 100,
+                'execution_time_ms': duration_ms,
                 'parameters': {
                     'm': m,
                     'a': a,
@@ -146,15 +160,16 @@ def test_period(request):
 
 @csrf_exempt
 def test_cesaro(request):
-    #Тестування генератора за теоремою Чезаро
+    # Тестування генератора за теоремою Чезаро
     if request.method == 'POST':
         try:
+            start_time = time.time()
             data = json.loads(request.body)
 
             # Отримання параметрів
             m = int(data.get('m', VARIANT_17_CONFIG['m']))
             a = int(data.get('a', VARIANT_17_CONFIG['a']))
-            c = int(data.get('c', VARIANT_17_CONFIG['c'] ))
+            c = int(data.get('c', VARIANT_17_CONFIG['c']))
             x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
             num_pairs = min(int(data.get('num_pairs', 10000)), 50000)
 
@@ -164,6 +179,9 @@ def test_cesaro(request):
 
             # Тестування системного генератора (random)
             system_results = CesaroTest.compare_with_system_random(num_pairs)
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
 
             response = {
                 'success': True,
@@ -178,7 +196,8 @@ def test_cesaro(request):
                     'error_percentage': (system_results['error'] / math.pi) * 100
                 },
                 'actual_pi': math.pi,
-                'num_pairs': num_pairs
+                'num_pairs': num_pairs,
+                'execution_time_ms': duration_ms
             }
 
             return JsonResponse(response)
@@ -191,15 +210,16 @@ def test_cesaro(request):
 
 @csrf_exempt
 def test_randomness(request):
-    #Комплексне тестування випадковості
+    # Комплексне тестування випадковості
     if request.method == 'POST':
         try:
+            start_time = time.time()
             data = json.loads(request.body)
 
             # Отримання параметрів
             m = int(data.get('m', VARIANT_17_CONFIG['m']))
             a = int(data.get('a', VARIANT_17_CONFIG['a']))
-            c = int(data.get('c', VARIANT_17_CONFIG['c'] ))
+            c = int(data.get('c', VARIANT_17_CONFIG['c']))
             x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
             count = min(int(data.get('count', 1000)), 10000)
 
@@ -213,12 +233,16 @@ def test_randomness(request):
             # Тест послідовностей
             runs_results = RunsTest.test(sequence)
 
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
             response = {
                 'success': True,
                 'tests': {
                     'frequency': frequency_results,
                     'runs': runs_results
                 },
+                'execution_time_ms': duration_ms,
                 'parameters': {
                     'm': m,
                     'a': a,
@@ -234,6 +258,7 @@ def test_randomness(request):
             return JsonResponse({'error': str(e)})
 
     return JsonResponse({'error': 'Помилка'})
+
 
 @csrf_exempt
 def export_results(request):

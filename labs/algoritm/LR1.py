@@ -2,6 +2,8 @@
 Модуль для генерації псевдовипадкових чисел
 Лабораторна робота №1 - Варіант 17
 """
+import numpy as np
+
 import math
 import random
 from typing import List, Tuple, Dict, Any
@@ -127,7 +129,7 @@ class CesaroTest:
         # Фінальна оцінка
         if coprime_count > 0:
             probability = coprime_count / num_pairs
-            pi_estimate = math.sqrt(6.0 / probability)
+            pi_estimate = math.sqrt(6.0 / probability) #Тест чезеро 6/Pi^2
             error = abs(pi_estimate - math.pi)
             return pi_estimate, error, pi_estimates
 
@@ -148,7 +150,7 @@ class CesaroTest:
                 coprime_count += 1
 
         probability = coprime_count / num_pairs
-        pi_estimate = math.sqrt(6.0 / probability) if probability > 0 else 0
+        pi_estimate = math.sqrt(6.0 / probability) if probability > 0 else 0 #Тест чезеро 6/Pi^2
         error = abs(pi_estimate - math.pi)
 
         return {
