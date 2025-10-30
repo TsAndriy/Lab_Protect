@@ -16,4 +16,10 @@ urlpatterns = [
     path('lab1/randomness/', views.test_randomness, name='test_randomness'),
     path('lab1/export/', views.export_results, name='export_results'),
 
+    # Лабораторна робота 2 - MD5
+    path('lab2/', views.lab2_md5, name='lab2'),
+    path('lab2/hash-text/', views.hash_text, name='hash_text'),
+    path('lab2/hash-file/', views.hash_file, name='hash_file'),
+    path('lab2/verify-file/', views.verify_file, name='verify_file'),
+    path('lab2/export-hash/', views.export_hash, name='export_hash'),
 ]

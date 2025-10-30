@@ -1,16 +1,19 @@
 import math
-import time  # Імпортуємо модуль time
+import time
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import io
-from .algoritm.Config.config import VARIANT_17_CONFIG
+from .algoritm.Config.config import (
+    CONFIG_LR1
+)
 from .algoritm.LR1 import (
     LinearCongruentialGenerator,
     CesaroTest,
     FrequencyTest,
     RunsTest)
+from .algoritm.LR2 import MD5
 
 
 def index(request):
@@ -23,8 +26,8 @@ def index(request):
         },
         {
             'number': 2,
-            'title': 'Створенння програмного засобу для забезбечення цілісності інформації',
-            'description': '',
+            'title': 'Створення програмного засобу для забезбечення цілісності інформації',
+            'description': 'Реалізація алгоритму хешування MD5',
             'url': 'lab2/',
         }
     ]
@@ -36,10 +39,12 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+# ==================== Лабораторна робота 1 ====================
+
 def lab1_prng(request):
     context = {
         'title': 'Лабораторна робота 1',
-        'config': VARIANT_17_CONFIG
+        'config': CONFIG_LR1
     }
     return render(request, 'labs/lab1/index.html', context)
 
@@ -49,14 +54,14 @@ def generate_prng(request):
     # Генерація псевдовипадкових чисел
     if request.method == 'POST':
         try:
-            start_time = time.time()  # Початок вимірювання часу
+            start_time = time.time()
             data = json.loads(request.body)
 
             # Отримання параметрів
-            m = int(data.get('m', VARIANT_17_CONFIG['m']))
-            a = int(data.get('a', VARIANT_17_CONFIG['a']))
-            c = int(data.get('c', VARIANT_17_CONFIG['c']))
-            x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
+            m = int(data.get('m', CONFIG_LR1['m']))
+            a = int(data.get('a', CONFIG_LR1['a']))
+            c = int(data.get('c', CONFIG_LR1['c']))
+            x0 = int(data.get('x0', CONFIG_LR1['x0']))
             count = int(data.get('count', 200))
 
             # Валідація
@@ -78,15 +83,15 @@ def generate_prng(request):
             # Статистика
             stats = generator.get_statistics(sequence)
 
-            end_time = time.time()  # Кінець вимірювання часу
-            duration_ms = (end_time - start_time) * 1000  # Розрахунок часу в мілісекундах
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
 
             response = {
                 'success': True,
                 'sequence': sequence,
                 'count': len(sequence),
                 'statistics': stats,
-                'generation_time_ms': duration_ms,  # Додаємо час генерації у відповідь
+                'generation_time_ms': duration_ms,
                 'parameters': {
                     'm': m,
                     'a': a,
@@ -112,10 +117,10 @@ def test_period(request):
             data = json.loads(request.body)
 
             # Отримання параметрів
-            m = int(data.get('m', VARIANT_17_CONFIG['m']))
-            a = int(data.get('a', VARIANT_17_CONFIG['a']))
-            c = int(data.get('c', VARIANT_17_CONFIG['c']))
-            x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
+            m = int(data.get('m', CONFIG_LR1['m']))
+            a = int(data.get('a', CONFIG_LR1['a']))
+            c = int(data.get('c', CONFIG_LR1['c']))
+            x0 = int(data.get('x0', CONFIG_LR1['x0']))
             max_iterations = int(data.get('max_iterations'))
 
             # Генератор
@@ -167,10 +172,10 @@ def test_cesaro(request):
             data = json.loads(request.body)
 
             # Отримання параметрів
-            m = int(data.get('m', VARIANT_17_CONFIG['m']))
-            a = int(data.get('a', VARIANT_17_CONFIG['a']))
-            c = int(data.get('c', VARIANT_17_CONFIG['c']))
-            x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
+            m = int(data.get('m', CONFIG_LR1['m']))
+            a = int(data.get('a', CONFIG_LR1['a']))
+            c = int(data.get('c', CONFIG_LR1['c']))
+            x0 = int(data.get('x0', CONFIG_LR1['x0']))
             num_pairs = min(int(data.get('num_pairs', 10000)), 5000000)
 
             # Тестування лінійного генератора
@@ -217,10 +222,10 @@ def test_randomness(request):
             data = json.loads(request.body)
 
             # Отримання параметрів
-            m = int(data.get('m', VARIANT_17_CONFIG['m']))
-            a = int(data.get('a', VARIANT_17_CONFIG['a']))
-            c = int(data.get('c', VARIANT_17_CONFIG['c']))
-            x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
+            m = int(data.get('m', CONFIG_LR1['m']))
+            a = int(data.get('a', CONFIG_LR1['a']))
+            c = int(data.get('c', CONFIG_LR1['c']))
+            x0 = int(data.get('x0', CONFIG_LR1['x0']))
             count = min(int(data.get('count', 1000)), 5000000)
 
             # Генерація послідовності
@@ -270,10 +275,10 @@ def export_results(request):
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Невірний JSON'}, status=400)
 
-    m = int(data.get('m', VARIANT_17_CONFIG['m']))
-    a = int(data.get('a', VARIANT_17_CONFIG['a']))
-    c = int(data.get('c', VARIANT_17_CONFIG['c']))
-    x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
+    m = int(data.get('m', CONFIG_LR1['m']))
+    a = int(data.get('a', CONFIG_LR1['a']))
+    c = int(data.get('c', CONFIG_LR1['c']))
+    x0 = int(data.get('x0', CONFIG_LR1['x0']))
     count = int(data.get('count', 100))
 
     # Генерація послідовності
@@ -301,3 +306,158 @@ def export_results(request):
     response = HttpResponse(file_content, content_type='text/plain; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="lr1_lin.txt"'
     return response
+
+
+# ==================== Лабораторна робота 2 ====================
+
+def lab2_md5(request):
+    """Головна сторінка ЛР2"""
+    context = {'title': 'Лабораторна робота 2'}
+    return render(request, 'labs/lab2/index.html', context)
+
+
+@csrf_exempt
+def hash_text(request):
+    """Хешування текстового рядка"""
+    if request.method == 'POST':
+        try:
+            start_time = time.time()
+            data = json.loads(request.body)
+
+            text = data.get('text', '')
+
+            # Обчислюємо хеш
+            hash_result = MD5.hash_string(text)
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
+            response = {
+                'success': True,
+                'hash': hash_result,
+                'text_length': len(text),
+                'execution_time_ms': duration_ms
+            }
+
+            return JsonResponse(response)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)
+
+
+@csrf_exempt
+def hash_file(request):
+    """Хешування файлу"""
+    if request.method == 'POST':
+        try:
+            start_time = time.time()
+
+            # Перевіряємо наявність файлу
+            if 'file' not in request.FILES:
+                return JsonResponse({'error': 'Файл не знайдено'}, status=400)
+
+            uploaded_file = request.FILES['file']
+
+            # Обчислюємо хеш
+            hash_result = MD5.hash_file(file_object=uploaded_file)
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
+            response = {
+                'success': True,
+                'hash': hash_result,
+                'filename': uploaded_file.name,
+                'file_size': uploaded_file.size,
+                'execution_time_ms': duration_ms
+            }
+
+            return JsonResponse(response)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)
+
+
+@csrf_exempt
+def verify_file(request):
+    """Перевірка цілісності файлу за хешем"""
+    if request.method == 'POST':
+        try:
+            start_time = time.time()
+
+            # Перевіряємо наявність файлу
+            if 'file' not in request.FILES:
+                return JsonResponse({'error': 'Файл не знайдено'}, status=400)
+
+            uploaded_file = request.FILES['file']
+            expected_hash = request.POST.get('expected_hash', '').strip()
+
+            # Валідація хешу
+            if not expected_hash:
+                return JsonResponse({'error': 'Не вказано очікуваний хеш'}, status=400)
+
+            if len(expected_hash) != 32:
+                return JsonResponse({'error': 'Невірний формат хешу (повинен бути 32 символи)'}, status=400)
+
+            # Перевіряємо файл
+            verification_result = MD5.verify_file(
+                file_object=uploaded_file,
+                expected_hash=expected_hash
+            )
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
+            response = {
+                'success': True,
+                'match': verification_result['match'],
+                'expected_hash': verification_result['expected_hash'],
+                'actual_hash': verification_result['actual_hash'],
+                'message': verification_result['message'],
+                'filename': uploaded_file.name,
+                'file_size': uploaded_file.size,
+                'execution_time_ms': duration_ms
+            }
+
+            return JsonResponse(response)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)
+
+
+@csrf_exempt
+def export_hash(request):
+    """Експорт хешу у файл"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+
+            hash_value = data.get('hash', '')
+            filename = data.get('filename', 'file')
+
+            if not hash_value:
+                return JsonResponse({'error': 'Не вказано хеш'}, status=400)
+
+            # Формуємо вміст файлу
+            output = io.StringIO()
+            output.write(hash_value)
+
+            file_content = output.getvalue()
+            output.close()
+
+            # Створюємо HTTP-відповідь
+            response = HttpResponse(file_content, content_type='text/plain; charset=utf-8')
+            response['Content-Disposition'] = f'attachment; filename="{filename}.md5.txt"'
+
+            return response
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)
