@@ -5,12 +5,12 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import io
-
+from .algoritm.Config.config import VARIANT_17_CONFIG
 from .algoritm.LR1 import (
     LinearCongruentialGenerator,
     CesaroTest,
     FrequencyTest,
-    RunsTest, VARIANT_17_CONFIG)
+    RunsTest)
 
 
 def index(request):
@@ -171,7 +171,7 @@ def test_cesaro(request):
             a = int(data.get('a', VARIANT_17_CONFIG['a']))
             c = int(data.get('c', VARIANT_17_CONFIG['c']))
             x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
-            num_pairs = min(int(data.get('num_pairs', 10000)), 50000)
+            num_pairs = min(int(data.get('num_pairs', 10000)), 5000000)
 
             # Тестування лінійного генератора
             generator = LinearCongruentialGenerator(m, a, c, x0)
@@ -221,7 +221,7 @@ def test_randomness(request):
             a = int(data.get('a', VARIANT_17_CONFIG['a']))
             c = int(data.get('c', VARIANT_17_CONFIG['c']))
             x0 = int(data.get('x0', VARIANT_17_CONFIG['x0']))
-            count = min(int(data.get('count', 1000)), 10000)
+            count = min(int(data.get('count', 1000)), 5000000)
 
             # Генерація послідовності
             generator = LinearCongruentialGenerator(m, a, c, x0)
