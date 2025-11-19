@@ -1,12 +1,12 @@
 import struct
 import math
 
-
+cd = 0xFFFFFFFF
 class MD5:
     """Реалізація алгоритму хешування MD5 згідно RFC 1321"""
 
     # Таблиця T, створена на основі функції синуса
-    T = [int(abs(math.sin(i + 1)) * 2 ** 32) & 0xFFFFFFFF for i in range(64)]
+    T = [int(abs(math.sin(i + 1)) * 2 ** 32) & cd for i in range(64)]
 
     # Значення циклічних зсувів для кожного циклу
     S = [
@@ -25,27 +25,23 @@ class MD5:
     @staticmethod
     def _left_rotate(value, shift):
         """Циклічний зсув вліво на shift біт для 32-бітового значення"""
-        value &= 0xFFFFFFFF
-        return ((value << shift) | (value >> (32 - shift))) & 0xFFFFFFFF
+        value &= cd
+        return ((value << shift) | (value >> (32 - shift))) & cd
 
     @staticmethod
     def _f(b, c, d):
-        """Елементарна функція F для циклу 1"""
         return (b & c) | (~b & d)
 
     @staticmethod
     def _g(b, c, d):
-        """Елементарна функція G для циклу 2"""
         return (b & d) | (c & ~d)
 
     @staticmethod
     def _h(b, c, d):
-        """Елементарна функція H для циклу 3"""
         return b ^ c ^ d
 
     @staticmethod
     def _i(b, c, d):
-        """Елементарна функція I для циклу 4"""
         return c ^ (b | ~d)
 
     @staticmethod
@@ -83,39 +79,39 @@ class MD5:
         for i in range(16):
             k = i
             a, b, c, d = d, (b + MD5._left_rotate(
-                (a + MD5._f(b, c, d) + X[k] + MD5.T[i]) & 0xFFFFFFFF,
+                (a + MD5._f(b, c, d) + X[k] + MD5.T[i]) & cd,
                 MD5.S[0][i]
-            )) & 0xFFFFFFFF, b, c
+            )) & cd, b, c
 
         # Цикл 2: використовуємо функцію G
         for i in range(16):
             k = (1 + 5 * i) % 16
             a, b, c, d = d, (b + MD5._left_rotate(
-                (a + MD5._g(b, c, d) + X[k] + MD5.T[i + 16]) & 0xFFFFFFFF,
+                (a + MD5._g(b, c, d) + X[k] + MD5.T[i + 16]) & cd,
                 MD5.S[1][i]
-            )) & 0xFFFFFFFF, b, c
+            )) & cd, b, c
 
         # Цикл 3: використовуємо функцію H
         for i in range(16):
             k = (5 + 3 * i) % 16
             a, b, c, d = d, (b + MD5._left_rotate(
-                (a + MD5._h(b, c, d) + X[k] + MD5.T[i + 32]) & 0xFFFFFFFF,
+                (a + MD5._h(b, c, d) + X[k] + MD5.T[i + 32]) & cd,
                 MD5.S[2][i]
-            )) & 0xFFFFFFFF, b, c
+            )) & cd, b, c
 
         # Цикл 4: використовуємо функцію I
         for i in range(16):
             k = (7 * i) % 16
             a, b, c, d = d, (b + MD5._left_rotate(
-                (a + MD5._i(b, c, d) + X[k] + MD5.T[i + 48]) & 0xFFFFFFFF,
+                (a + MD5._i(b, c, d) + X[k] + MD5.T[i + 48]) & cd,
                 MD5.S[3][i]
-            )) & 0xFFFFFFFF, b, c
+            )) & cd, b, c
 
         # Додаємо результат до початкових значень
-        a = (a + aa) & 0xFFFFFFFF
-        b = (b + bb) & 0xFFFFFFFF
-        c = (c + cc) & 0xFFFFFFFF
-        d = (d + dd) & 0xFFFFFFFF
+        a = (a + aa) & cd
+        b = (b + bb) & cd
+        c = (c + cc) & cd
+        d = (d + dd) & cd
 
         return a, b, c, d
 
