@@ -22,4 +22,9 @@ urlpatterns = [
     path('lab2/hash-file/', views.hash_file, name='hash_file'),
     path('lab2/verify-file/', views.verify_file, name='verify_file'),
     path('lab2/export-hash/', views.export_hash, name='export_hash'),
+
+    # Лабораторна робота 3 - RC5
+    path('lab3/', views.lab3_rc5, name='lab3'),
+    path('lab3/encrypt/', views.rc5_encrypt, name='rc5_encrypt'),
+    path('lab3/decrypt/', views.rc5_decrypt, name='rc5_decrypt'),
 ]

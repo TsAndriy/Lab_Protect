@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import io
 from .algoritm.Config.config import (
-    CONFIG_LR1
+    CONFIG_LR1, CONFIG_LR3
 )
 from .algoritm.LR1 import (
     LinearCongruentialGenerator,
@@ -14,6 +14,7 @@ from .algoritm.LR1 import (
     FrequencyTest,
     RunsTest)
 from .algoritm.LR2 import MD5
+from .algoritm.LR3 import RC5
 
 
 def index(request):
@@ -29,6 +30,12 @@ def index(request):
             'title': 'Створення програмного засобу для забезбечення цілісності інформації',
             'description': 'Реалізація алгоритму хешування MD5',
             'url': 'lab2/',
+        },
+        {
+            'number': 3,
+            'title': 'Створення програмного засобу для забезбечення конфідеційності інформації',
+            'description': 'Реалізація алгоритму шифрування інформацій RC5',
+            'url': 'lab3/',
         }
     ]
 
@@ -459,5 +466,128 @@ def export_hash(request):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)
+
+# ==================== Лабораторна робота 3 (RC5) ====================
+
+def lab3_rc5(request):
+    """Головна сторінка ЛР3"""
+    context = {'title': 'Лабораторна робота 3: Шифрування RC5'}
+    return render(request, 'labs/lab3/index.html', context)
+
+
+@csrf_exempt
+def rc5_encrypt(request):
+    """Шифрування файлу/даних алгоритмом RC5"""
+    if request.method == 'POST':
+        try:
+            start_time = time.time()
+
+            # Отримуємо пароль
+            password = request.POST.get('password', '')
+            if not password:
+                return JsonResponse({'error': 'Пароль не може бути порожнім'}, status=400)
+
+            # Отримуємо дані для шифрування
+            if 'file' in request.FILES:
+                file_obj = request.FILES['file']
+                input_data = file_obj.read()
+                filename = file_obj.name
+            else:
+                # Якщо не файл, пробуємо взяти текст
+                text = request.POST.get('text', '')
+                if not text:
+                    return JsonResponse({'error': 'Не надано даних для шифрування'}, status=400)
+                input_data = text.encode('utf-8')
+                filename = 'text.txt'
+
+            # Шифруємо (передаємо конфігурації з views)
+            encrypted_data = RC5.encrypt_data(input_data, password, CONFIG_LR3, CONFIG_LR1)
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
+            response = {
+                'success': True,
+                'filename': filename + '.bin',
+                'original_size': len(input_data),
+                'encrypted_size': len(encrypted_data),
+                'encrypted_hex': encrypted_data.hex()[:100] + '...' if len(
+                    encrypted_data) > 100 else encrypted_data.hex(),
+                'encrypted_data_full_hex': encrypted_data.hex(),
+                'execution_time_ms': duration_ms
+            }
+
+            return JsonResponse(response)
+
+        except Exception as e:
+            return JsonResponse({'error': f"Помилка шифрування: {str(e)}"}, status=500)
+
+    return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)
+
+
+@csrf_exempt
+def rc5_decrypt(request):
+    """Дешифрування файлу/даних алгоритмом RC5"""
+    if request.method == 'POST':
+        try:
+            start_time = time.time()
+
+            # Отримуємо пароль
+            password = request.POST.get('password', '')
+            if not password:
+                return JsonResponse({'error': 'Пароль не може бути порожнім'}, status=400)
+
+            # Отримуємо зашифровані дані
+            input_data = b''
+            filename = 'decrypted_file'
+
+            if 'file' in request.FILES:
+                file_obj = request.FILES['file']
+                input_data = file_obj.read()
+                filename = file_obj.name.replace('.bin', '')
+            elif 'encrypted_hex' in request.POST:
+                # Якщо передаємо HEX рядок напряму
+                hex_data = request.POST.get('encrypted_hex', '').strip()
+                try:
+                    input_data = bytes.fromhex(hex_data)
+                except ValueError:
+                    return JsonResponse({'error': 'Некоректний HEX формат'}, status=400)
+            else:
+                return JsonResponse({'error': 'Не надано даних для дешифрування'}, status=400)
+
+            # Дешифруємо (передаємо конфігурацію з views)
+            try:
+                decrypted_data = RC5.decrypt_data(input_data, password, CONFIG_LR3)
+            except ValueError as ve:
+                return JsonResponse({'error': str(ve)}, status=400)
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
+            # Пробуємо декодувати як текст для прев'ю
+            try:
+                text_preview = decrypted_data.decode('utf-8')
+                is_text = True
+            except UnicodeDecodeError:
+                text_preview = "Бінарні дані (неможливо відобразити як текст)"
+                is_text = False
+
+            response = {
+                'success': True,
+                'filename': filename,
+                'decrypted_size': len(decrypted_data),
+                'text_preview': text_preview[:200] + '...' if len(text_preview) > 200 else text_preview,
+                'is_text': is_text,
+                'decrypted_hex': decrypted_data.hex(),
+                'decrypted_text_full': text_preview if is_text else None,
+                'execution_time_ms': duration_ms
+            }
+
+            return JsonResponse(response)
+
+        except Exception as e:
+            return JsonResponse({'error': f"Помилка дешифрування: {str(e)}"}, status=500)
 
     return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)

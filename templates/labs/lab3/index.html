@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/ЛР3/LR3.css' %}">
+{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+
+<!-- Інформація про конфігурацію -->
+<div class="info-box">
+    <h3>Варіант 17</h3>
+    <p>
+        <strong>Розмір слова (w):</strong> 32 біти<br>
+        <strong>Раундів (r):</strong> 8<br>
+        <strong>Ключ (b):</strong> 8 байт (64 біти)<br>
+        <strong>Вектор ініціалізації (IV):</strong> Генерується через ГПВЧ (ЛР1)<br>
+        <strong>Ключ:</strong> Генерується з пароля через MD5 (ЛР2)
+    </p>
+</div>
+
+<div class="tabs">
+    <button class="tab-btn active" data-tab="encrypt-tab">
+        Шифрування
+    </button>
+    <button class="tab-btn" data-tab="decrypt-tab">
+        Дешифрування
+    </button>
+</div>
+
+<!-- Вкладка: Шифрування -->
+<div class="tab-content active" id="encrypt-tab">
+    <div class="section">
+        <h3>Шифрування файлу або тексту</h3>
+        <p class="info-text">Введіть пароль та оберіть файл для шифрування.</p>
+
+        <div class="form-group">
+            <label for="encrypt-password">Парольна фраза (Обов'язково):</label>
+            <input type="password" id="encrypt-password" class="form-control" placeholder="Введіть секретний пароль">
+        </div>
+
+        <div class="file-upload-area" id="encrypt-drop-zone">
+            <input type="file" id="encrypt-file-input" class="file-input">
+            <div class="file-upload-content">
+                <p class="upload-text">Перетягніть файл сюди або клацніть для вибору</p>
+            </div>
+            <div class="file-info" id="encrypt-file-info" style="display: none;">
+                <span id="encrypt-file-name"></span>
+                <span id="encrypt-file-size"></span>
+            </div>
+        </div>
+
+        <div class="separator">АБО</div>
+
+        <div class="form-group">
+            <label for="encrypt-text-input">Введіть текст вручну:</label>
+            <textarea id="encrypt-text-input" class="form-control" rows="3" placeholder="Текст для шифрування (якщо файл не обрано)"></textarea>
+        </div>
+
+        <div class="button-group">
+            <button id="btn-encrypt" class="btn btn-primary">Зашифрувати</button>
+        </div>
+
+        <!-- Результат шифрування -->
+        <div id="encrypt-result" class="result-container" style="display: none;">
+            <h3>Результат шифрування:</h3>
+            <div class="hash-display">
+                <label>Зашифровані дані (HEX, перші байти):</label>
+                <div class="hash-value" id="encrypt-hex-preview"></div>
+            </div>
+            
+            <div class="result-info">
+                <div class="info-item">
+                    <span class="label">Вхідний розмір:</span>
+                    <span class="value" id="encrypt-original-size"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Вихідний розмір:</span>
+                    <span class="value" id="encrypt-output-size"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Час виконання:</span>
+                    <span class="value" id="encrypt-time"></span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="btn-download-encrypted" class="btn btn-success">Завантажити файл (.bin)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Вкладка: Дешифрування -->
+<div class="tab-content" id="decrypt-tab">
+    <div class="section">
+        <h3>Дешифрування</h3>
+        <p class="info-text">Завантажте .bin файл або вставте HEX-дані.</p>
+
+        <div class="form-group">
+            <label for="decrypt-password">Парольна фраза (та сама, що при шифруванні):</label>
+            <input type="password" id="decrypt-password" class="form-control" placeholder="Введіть пароль">
+        </div>
+
+        <div class="file-upload-area" id="decrypt-drop-zone">
+            <input type="file" id="decrypt-file-input" class="file-input" accept=".bin,*/*">
+            <div class="file-upload-content">
+                <p class="upload-text">Перетягніть .bin файл сюди</p>
+            </div>
+            <div class="file-info" id="decrypt-file-info" style="display: none;">
+                <span id="decrypt-file-name"></span>
+                <span id="decrypt-file-size"></span>
+            </div>
+        </div>
+
+        <div class="separator">АБО</div>
+
+        <div class="form-group">
+            <label for="decrypt-hex-input">Вставте HEX-рядок (якщо файл не обрано):</label>
+            <textarea id="decrypt-hex-input" class="form-control hash-input" rows="3" placeholder="Вставте HEX дані..."></textarea>
+        </div>
+
+        <div class="button-group">
+            <button id="btn-decrypt" class="btn btn-primary">Дешифрувати</button>
+        </div>
+
+        <!-- Результат дешифрування -->
+        <div id="decrypt-result" class="result-container" style="display: none;">
+            <h3>Результат дешифрування:</h3>
+            
+            <div class="verification-status success" id="decrypt-status-box">
+                <span class="status-message">Успішно дешифровано!</span>
+            </div>
+
+            <div class="hash-display" id="decrypt-text-container">
+                <label>Текстове представлення (UTF-8):</label>
+                <div class="hash-value" id="decrypt-text-preview" style="white-space: pre-wrap;"></div>
+            </div>
+
+             <div class="hash-display" id="decrypt-hex-container" style="display:none;">
+                <label>HEX представлення (бінарні дані):</label>
+                <div class="hash-value" id="decrypt-hex-full"></div>
+            </div>
+
+            <div class="result-info">
+                <div class="info-item">
+                    <span class="label">Розмір даних:</span>
+                    <span class="value" id="decrypt-size"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Час виконання:</span>
+                    <span class="value" id="decrypt-time"></span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="btn-download-decrypted" class="btn btn-success">Завантажити розшифрований файл</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loader -->
+<div id="loader" class="loader" style="display: none;"></div>
+
+<!-- Повідомлення -->
+<div id="notification" class="notification">
+    <span id="notification-message"></span>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/ЛР3/lr3_JS.js' %}"></script>
+{% endblock %}
