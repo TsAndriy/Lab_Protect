@@ -513,8 +513,7 @@ def rc5_encrypt(request):
                 'filename': filename + '.bin',
                 'original_size': len(input_data),
                 'encrypted_size': len(encrypted_data),
-                'encrypted_hex': encrypted_data.hex()[:100] + '...' if len(
-                    encrypted_data) > 100 else encrypted_data.hex(),
+                'encrypted_hex': encrypted_data.hex(),
                 'encrypted_data_full_hex': encrypted_data.hex(),
                 'execution_time_ms': duration_ms
             }
@@ -578,7 +577,7 @@ def rc5_decrypt(request):
                 'success': True,
                 'filename': filename,
                 'decrypted_size': len(decrypted_data),
-                'text_preview': text_preview[:200] + '...' if len(text_preview) > 200 else text_preview,
+                'text_preview': text_preview,
                 'is_text': is_text,
                 'decrypted_hex': decrypted_data.hex(),
                 'decrypted_text_full': text_preview if is_text else None,

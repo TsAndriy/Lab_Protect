@@ -211,7 +211,7 @@ function displayDecryptResult(data) {
     } else {
         textContainer.style.display = 'none';
         hexContainer.style.display = 'block';
-        document.getElementById('decrypt-hex-full').textContent = data.decrypted_hex.substring(0, 500) + (data.decrypted_hex.length > 500 ? '...' : '');
+        document.getElementById('decrypt-hex-full').textContent = data.decrypted_hex;
     }
 
     document.getElementById('decrypt-size').textContent = formatBytes(data.decrypted_size);
