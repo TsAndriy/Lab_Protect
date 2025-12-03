@@ -43,16 +43,14 @@
             <button class="btn btn-success" onclick="exportResults()" type="file">Завантажити в txt файл</button>
         </div>
 
-        <div id="gen-results" style="display: none;">
-            <div class="results-container">
-                <h3>Результати генерації</h3>
-                <div class="grid" id="gen-stats"></div>
-                <div style="margin-top: 20px;">
-                    <h4>Згенерована послідовність: <span id="sequence-info" style="font-weight: normal; font-size: 0.9em;"></span></h4>
-                    <div id="gen-sequence" style="max-height: 200px; overflow-y: auto; padding: 10px; background: #f9fafb; border-radius: 8px; margin-top: 10px; word-break: break-all;"></div>
-                    <div id="pagination-controls" style="margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                        <!-- Кнопки пагінації будуть вставлені тут -->
-                    </div>
+        <div id="gen-results" class="result-container" style="display: none;">
+            <h3>Результати генерації</h3>
+            <div class="grid" id="gen-stats"></div>
+            <div>
+                <h4>Згенерована послідовність: <span id="sequence-info" class="info-text"></span></h4>
+                <div id="gen-sequence" class="sequence-display"></div>
+                <div id="pagination-controls" class="pagination-controls">
+                    <!-- Кнопки пагінації будуть вставлені тут -->
                 </div>
             </div>
         </div>
@@ -62,18 +60,16 @@
     <div id="period" class="tab-content">
         <div class="card">
             <h3>Тестування періоду генератора</h3>
-            <p style="margin: 15px 0; color: #6b7280;">
+            <p class="info-text">
                 Період генератора - це кількість чисел до початку повторення послідовності.
                 Для надійного генератора період повинен бути близьким до максимально можливого.
             </p>
             <button class="btn" onclick="testPeriod()">Знайти період</button>
         </div>
 
-        <div id="period-results" style="display: none;">
-            <div class="results-container">
-                <h3>Результати аналізу періоду</h3>
-                <div id="period-stats"></div>
-            </div>
+        <div id="period-results" class="result-container" style="display: none;">
+            <h3>Результати аналізу періоду</h3>
+            <div id="period-stats"></div>
         </div>
     </div>
 
@@ -81,22 +77,20 @@
     <div id="cesaro" class="tab-content">
         <div class="card">
             <h3>Тест Чезаро для оцінки Pi</h3>
-            <p style="margin: 15px 0; color: #6b7280;">
+            <p class="info-text">
                 За теоремою Чезаро, ймовірність того, що найбільш спільний дільник (gcd) двох випадкових чисел дорівнює 1, становить 6/Pi^2.
                 Це дозволяє оцінити якість генератора через точність визначення Pi.
             </p>
-            <div class="form-group" style="max-width: 300px;">
+            <div class="form-group input-group-sm">
                 <label>Кількість пар для тестування:</label>
                 <input type="number" id="cesaro-pairs" value="10000" min="100" max="100000000">
             </div>
             <button class="btn" onclick="testCesaro()">Запустити перевірку</button>
         </div>
 
-        <div id="cesaro-results" style="display: none;">
-            <div class="results-container">
-                <h3>Результати тесту Чезаро</h3>
-                <div id="cesaro-stats"></div>
-            </div>
+        <div id="cesaro-results" class="result-container" style="display: none;">
+            <h3>Результати тесту Чезаро</h3>
+            <div id="cesaro-stats"></div>
         </div>
     </div>
 
@@ -104,22 +98,20 @@
     <div id="random" class="tab-content">
         <div class="card">
             <h3>Статистичні тести випадковості</h3>
-            <p style="margin: 15px 0; color: #6b7280;">
+            <p class="info-text">
                 Комплексне тестування включає частотний тест та тест послідовностей
                 для перевірки статистичних властивостей згенерованої послідовності.
             </p>
-            <div class="form-group" style="max-width: 300px;">
+            <div class="form-group input-group-sm">
                 <label>Розмір вибірки:</label>
                 <input type="number" id="random-count" value="1000" min="100" max="100000000">
             </div>
             <button class="btn" onclick="testRandomness()">Запустити перевірки</button>
         </div>
 
-        <div id="random-results" style="display: none;">
-            <div class="results-container">
-                <h3>Результати тестування випадковості</h3>
-                <div id="random-stats"></div>
-            </div>
+        <div id="random-results" class="result-container" style="display: none;">
+            <h3>Результати тестування випадковості</h3>
+            <div id="random-stats"></div>
         </div>
     </div>
 </div>
