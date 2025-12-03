@@ -1,10 +1,11 @@
+// Tabs are automatically initialized by common-utils.js
+
 document.addEventListener('DOMContentLoaded', () => {
-    initializeTabs(); // Використовуємо функцію з common-utils.js
     initializeEncryption();
     initializeDecryption();
 });
 
-// Видалена функція initializeTabs - використовуємо з common-utils.js
+// Видалена функція initializeTabs - tabs auto-initialize in common-utils.js
 
 // ==================== Шифрування ====================
 function initializeEncryption() {

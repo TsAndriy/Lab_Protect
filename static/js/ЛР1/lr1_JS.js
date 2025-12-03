@@ -3,10 +3,7 @@ let generatedSequence = [];
 let currentPage = 1;
 const itemsPerPage = 5000; // Кількість елементів на сторінці
 
-// Ініціалізація при завантаженні сторінки
-document.addEventListener('DOMContentLoaded', function() {
-    initializeTabs(); // Використовуємо функцію з common-utils.js
-});
+// Tabs are automatically initialized by common-utils.js
 
 // Функція для відображення поточної сторінки послідовності
 function renderSequencePage() {

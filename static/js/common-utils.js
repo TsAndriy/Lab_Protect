@@ -16,7 +16,7 @@ function initializeTabs() {
 
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const tabId = button.dataset.tab || button.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+            const tabId = button.dataset.tab;
             
             if (!tabId) return;
 
@@ -46,7 +46,7 @@ function switchTab(tabId) {
     tabContents.forEach(content => content.classList.remove('active'));
 
     const targetButton = Array.from(tabButtons).find(btn => 
-        btn.dataset.tab === tabId || btn.getAttribute('onclick')?.includes(tabId)
+        btn.dataset.tab === tabId
     );
     
     if (targetButton) {
@@ -271,7 +271,7 @@ function hexToArrayBuffer(hexString) {
     const hex = hexString.replace(/\s/g, '');
     const bytes = new Uint8Array(hex.length / 2);
     for (let i = 0; i < hex.length; i += 2) {
-        bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+        bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
     }
     return bytes.buffer;
 }
@@ -357,6 +357,13 @@ function isValidBase64(str) {
     } catch (err) {
         return false;
     }
+}
+
+// ==================== Автоматична ініціалізація ====================
+
+// Автоматично ініціалізуємо вкладки при завантаженні сторінки
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', initializeTabs);
 }
 
 // ==================== Експорт модулів (для сумісності) ====================

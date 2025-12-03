@@ -4,17 +4,16 @@ let selectedFile = null;
 let verifyFile = null;
 
 // ==================== Ініціалізація ====================
+// Tabs are automatically initialized by common-utils.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    initializeTabs();
     initializeTextHash();
     initializeFileHash();
     initializeVerifyFile();
     initializeCopyButtons();
 });
 
-// ==================== Управління вкладками ====================
-// Використовуємо функцію з common-utils.js
+// Видалена функція initializeTabs - tabs auto-initialize in common-utils.js
 
 // ==================== Хешування тексту ====================
 

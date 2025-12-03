@@ -3,14 +3,15 @@ let encryptedBlobUrl = null;
 let decryptedBlobUrl = null;
 
 // Ініціалізація слухачів подій при завантаженні сторінки
+// Tabs are automatically initialized by common-utils.js
+
 document.addEventListener('DOMContentLoaded', () => {
-    initializeTabs(); // Використовуємо функцію з common-utils.js
     setupFileUploads();
 });
 
 // --- UI Functions ---
 
-// Видалена функція switchTab - використовуємо initializeTabs з common-utils.js
+// Видалена функція switchTab - tabs auto-initialize in common-utils.js
 
 function toggleKeyInput(mode, type) {
     const textContainer = document.getElementById(`${mode}-key-text-container`);
