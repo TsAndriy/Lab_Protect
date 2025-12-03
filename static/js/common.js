@@ -143,9 +143,12 @@ function fadeIn(element, duration = 300) {
 
 function fadeOut(element, duration = 300) {
     if (!element) return;
-    element.style.animation = `fadeOut ${duration}ms ease`;
+    element.style.opacity = '0';
+    element.style.transition = `opacity ${duration}ms ease`;
     setTimeout(() => {
         element.style.display = 'none';
+        element.style.opacity = '';
+        element.style.transition = '';
     }, duration);
 }
 
