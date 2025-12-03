@@ -1,7 +1,7 @@
 // Глобальні змінні для пагінації
 let generatedSequence = [];
 let currentPage = 1;
-const itemsPerPage = 5000; // Кількість елементів на сторінці
+const itemsPerPage = 5000;
 
 // Функція для відображення поточної сторінки послідовності
 function renderSequencePage() {
@@ -17,7 +17,6 @@ function renderSequencePage() {
     }
 
     const totalPages = Math.ceil(generatedSequence.length / itemsPerPage);
-    // Перевірка, щоб номер сторінки був у допустимих межах
     if (currentPage < 1) currentPage = 1;
     if (currentPage > totalPages) currentPage = totalPages;
 
@@ -25,14 +24,11 @@ function renderSequencePage() {
     const end = start + itemsPerPage;
     const pageItems = generatedSequence.slice(start, end);
 
-    // Відображаємо лише частину даних
     seqDiv.innerHTML = pageItems.join(', ');
 
-    // Оновлюємо інформацію про послідовність
     const endItem = Math.min(end, generatedSequence.length);
     sequenceInfo.innerHTML = `(Показано ${start + 1} - ${endItem} з ${generatedSequence.length})`;
 
-    // Створюємо кнопки для пагінації
     let paginationHTML = '';
     if (totalPages > 1) {
         paginationHTML += `<button class="btn" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(1)">« Перша</button>`;
@@ -44,17 +40,14 @@ function renderSequencePage() {
     paginationControls.innerHTML = paginationHTML;
 }
 
-// Функція для переходу на іншу сторінку
 function goToPage(page) {
     currentPage = page;
     renderSequencePage();
-    // Прокручуємо до верху контейнера з послідовністю
     document.getElementById('gen-sequence').scrollTop = 0;
 }
 
-// Функція перемикання вкладок
+// Функція перемикання вкладок (використовує спрощену логіку)
 function switchTab(tabName) {
-    // Приховати всі вкладки
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
@@ -62,7 +55,6 @@ function switchTab(tabName) {
         btn.classList.remove('active');
     });
 
-    // Показати вибрану вкладку
     document.getElementById(tabName).classList.add('active');
     event.currentTarget.classList.add('active');
 }
@@ -77,7 +69,6 @@ async function generateNumbers() {
         count: parseInt(document.getElementById('gen-count').value)
     };
 
-    // Показуємо індикатор завантаження
     const seqDiv = document.getElementById('gen-sequence');
     document.getElementById('gen-results').style.display = 'block';
     seqDiv.innerHTML = 'Генерація та завантаження...';
@@ -85,16 +76,13 @@ async function generateNumbers() {
     document.getElementById('sequence-info').innerHTML = '';
 
     try {
-        const response = await fetch('/lab1/generate/', {
+        const result = await fetchJSON('/lab1/generate/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
 
-        const result = await response.json();
-
         if (result.success) {
-            // Відображаємо статистику (цей код залишається)
             const stats = result.statistics;
             document.getElementById('gen-stats').innerHTML = `
                 <div class="stat-card">
@@ -119,18 +107,15 @@ async function generateNumbers() {
                 </div>
             `;
 
-            // Зберігаємо повну послідовність
             generatedSequence = result.sequence;
-
-            // Встановлюємо початкову сторінку і відображаємо її
             currentPage = 1;
             renderSequencePage();
         } else {
-            seqDiv.innerHTML = ''; // Очищуємо повідомлення про завантаження у разі помилки
+            seqDiv.innerHTML = '';
             alert('Помилка: ' + result.error);
         }
     } catch (error) {
-        seqDiv.innerHTML = ''; // Очищуємо повідомлення про завантаження у разі помилки
+        seqDiv.innerHTML = '';
         alert('Помилка запиту: ' + error);
     }
 }
@@ -146,13 +131,11 @@ async function testPeriod() {
     };
 
     try {
-        const response = await fetch('/lab1/period/', {
+        const result = await fetchJSON('/lab1/period/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
-
-        const result = await response.json();
 
         if (result.success) {
             document.getElementById('period-results').style.display = 'block';
@@ -208,13 +191,11 @@ async function testCesaro() {
     };
 
     try {
-        const response = await fetch('/lab1/cesaro/', {
+        const result = await fetchJSON('/lab1/cesaro/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
-
-        const result = await response.json();
 
         if (result.success) {
             document.getElementById('cesaro-results').style.display = 'block';
@@ -286,13 +267,11 @@ async function testRandomness() {
     };
 
     try {
-        const response = await fetch('/lab1/randomness/', {
+        const result = await fetchJSON('/lab1/randomness/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
-
-        const result = await response.json();
 
         if (result.success) {
             document.getElementById('random-results').style.display = 'block';
@@ -302,7 +281,6 @@ async function testRandomness() {
 
             let html = '<div class="grid">';
 
-            // Частотний тест
             if (!freq.error) {
                 html += `
                     <div class="card">
@@ -333,7 +311,6 @@ async function testRandomness() {
                 `;
             }
 
-            // Тест послідовностей
             if (!runs.error) {
                 html += `
                     <div class="card">
@@ -365,7 +342,6 @@ async function testRandomness() {
             }
 
             html += '</div>';
-
             html += `<div class="alert alert-info" style="margin-top: 20px;">
                         <strong>Час виконання:</strong> ${result.execution_time_ms.toFixed(2)} мс
                      </div>`;
@@ -379,7 +355,7 @@ async function testRandomness() {
     }
 }
 
-//функція експорту результатів
+// Функція експорту результатів
 async function exportResults() {
     const data = {
         m: parseInt(document.getElementById('gen-m').value),
@@ -390,7 +366,6 @@ async function exportResults() {
     };
 
     try {
-        // Спочатку перевіряємо, чи підтримується `showSaveFilePicker`
         if ('showSaveFilePicker' in window) {
             const options = {
                 suggestedName: 'lr1_lin.txt',
@@ -401,10 +376,8 @@ async function exportResults() {
                     },
                 ],
             };
-            // Викликаємо діалог збереження ДО асинхронного запиту
             const handle = await window.showSaveFilePicker(options);
 
-            // Тепер, коли є "дозвіл" від користувача, робимо запит на сервер
             const response = await fetch('/lab1/export/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -418,15 +391,12 @@ async function exportResults() {
 
             const fileContent = await response.text();
 
-            // Записуємо отриманий контент у файл
             const writable = await handle.createWritable();
             await writable.write(fileContent);
             await writable.close();
             alert('Файл успішно збережено!');
         }
-
     } catch (error) {
-        // Ігноруємо помилку, якщо користувач просто закрив вікно збереження
         if (error.name !== 'AbortError') {
             alert('Помилка експорту: ' + error.message);
         }

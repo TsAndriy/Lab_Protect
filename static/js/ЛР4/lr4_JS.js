@@ -1,20 +1,19 @@
-// Глобальні змінні для збереження блобів завантаження
+// ==================== Lab 4: RSA Encryption ====================
+// Uses common utilities from common.js
+
 let encryptedBlobUrl = null;
 let decryptedBlobUrl = null;
 
-// Ініціалізація слухачів подій при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', () => {
     setupFileUploads();
 });
 
-// --- UI Functions ---
-
+// ==================== Tab and Input Management ====================
 function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
     document.getElementById(tabId).classList.add('active');
-    // Знаходимо кнопку, яка відповідає цій вкладці (простий пошук по тексту або індексу)
     const btns = document.querySelectorAll('.tab-btn');
     if(tabId === 'keys-tab') btns[0].classList.add('active');
     if(tabId === 'encrypt-tab') btns[1].classList.add('active');
@@ -35,7 +34,6 @@ function toggleKeyInput(mode, type) {
 }
 
 function setupFileUploads() {
-    // Encrypt File Input
     const encInput = document.getElementById('encrypt-file');
     encInput.addEventListener('change', (e) => {
         if(e.target.files[0]) {
@@ -45,7 +43,6 @@ function setupFileUploads() {
         }
     });
 
-    // Decrypt File Input
     const decInput = document.getElementById('decrypt-file');
     decInput.addEventListener('change', (e) => {
         if(e.target.files[0]) {
@@ -56,27 +53,14 @@ function setupFileUploads() {
     });
 }
 
-function showLoader() { document.getElementById('loader').style.display = 'block'; }
-function hideLoader() { document.getElementById('loader').style.display = 'none'; }
-
-function formatBytes(bytes, decimals = 2) {
-    if (!+bytes) return '0 Bytes';
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-}
-
-// --- API Functions ---
-
+// ==================== Key Generation ====================
 async function generateKeys() {
     const keySize = document.getElementById('key-size').value;
     const password = document.getElementById('key-password').value;
 
     showLoader();
     try {
-        const response = await fetch('/lab4/generate-keys/', {
+        const data = await fetchJSON('/lab4/generate-keys/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -84,7 +68,6 @@ async function generateKeys() {
                 password: password
             })
         });
-        const data = await response.json();
 
         if(data.success) {
             document.getElementById('private-key-display').value = data.private_key;
@@ -95,23 +78,19 @@ async function generateKeys() {
         }
     } catch (e) {
         alert('Помилка з\'єднання: ' + e);
-    } finally {
-        hideLoader();
     }
 }
 
+// ==================== Encryption ====================
 async function encryptData() {
     const fileInput = document.getElementById('encrypt-file');
     const textInput = document.getElementById('encrypt-text');
-
-    // Key Handling
     const keySource = document.querySelector('input[name="enc-key-source"]:checked').value;
     const keyTextInput = document.getElementById('encrypt-pub-key');
     const keyFileInput = document.getElementById('encrypt-pub-key-file');
 
     const formData = new FormData();
 
-    // Data
     if (fileInput.files[0]) {
         formData.append('file', fileInput.files[0]);
     } else if (textInput.value) {
@@ -121,7 +100,6 @@ async function encryptData() {
         return;
     }
 
-    // Key
     if (keySource === 'text') {
         if (!keyTextInput.value.trim()) { alert('Введіть публічний ключ!'); return; }
         formData.append('public_key_text', keyTextInput.value);
@@ -137,6 +115,7 @@ async function encryptData() {
             body: formData
         });
         const result = await response.json();
+        hideLoader();
 
         if (result.success) {
             document.getElementById('encrypt-result').style.display = 'block';
@@ -145,7 +124,6 @@ async function encryptData() {
             document.getElementById('enc-time').textContent = result.execution_time_ms.toFixed(2) + ' ms';
             document.getElementById('enc-hex-preview').textContent = result.encrypted_hex.substring(0, 100) + '...';
 
-            // Setup download
             const byteCharacters = atob(hexToBase64(result.encrypted_hex));
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
@@ -170,25 +148,22 @@ async function encryptData() {
             alert('Error: ' + result.error);
         }
     } catch (e) {
-        alert('Error: ' + e);
-    } finally {
         hideLoader();
+        alert('Error: ' + e);
     }
 }
 
+// ==================== Decryption ====================
 async function decryptData() {
     const fileInput = document.getElementById('decrypt-file');
     const hexInput = document.getElementById('decrypt-hex');
     const passwordInput = document.getElementById('decrypt-key-pass');
-
-    // Key Handling
     const keySource = document.querySelector('input[name="dec-key-source"]:checked').value;
     const keyTextInput = document.getElementById('decrypt-priv-key');
     const keyFileInput = document.getElementById('decrypt-priv-key-file');
 
     const formData = new FormData();
 
-    // Data
     if (fileInput.files[0]) {
         formData.append('file', fileInput.files[0]);
     } else if (hexInput.value) {
@@ -198,7 +173,6 @@ async function decryptData() {
         return;
     }
 
-    // Key
     if (keySource === 'text') {
         if (!keyTextInput.value.trim()) { alert('Введіть приватний ключ!'); return; }
         formData.append('private_key_text', keyTextInput.value);
@@ -207,7 +181,6 @@ async function decryptData() {
         formData.append('private_key_file', keyFileInput.files[0]);
     }
 
-    // Password
     if (passwordInput.value) {
         formData.append('password', passwordInput.value);
     }
@@ -219,6 +192,7 @@ async function decryptData() {
             body: formData
         });
         const result = await response.json();
+        hideLoader();
 
         if (result.success) {
             document.getElementById('decrypt-result').style.display = 'block';
@@ -233,8 +207,6 @@ async function decryptData() {
                 previewArea.value = "Увага: Дані бінарні. Показано HEX:\n" + result.decrypted_hex;
             }
 
-            // Setup download
-            // Якщо це текст, створюємо текстовий блоб, інакше бінарний з HEX
             let blob;
             if (result.is_text) {
                 blob = new Blob([result.text_preview], {type: "text/plain"});
@@ -266,38 +238,19 @@ async function decryptData() {
         }
     } catch (e) {
         alert('Error: ' + e);
-    } finally {
-        hideLoader();
     }
 }
 
-// Helpers
+// ==================== Helper Functions ====================
 function copyText(elementId) {
-    const copyText = document.getElementById(elementId);
-    copyText.select();
-    copyText.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(copyText.value).then(() => {
-        alert("Скопійовано!");
-    });
+    const element = document.getElementById(elementId);
+    element.select();
+    element.setSelectionRange(0, 99999);
+    copyToClipboard(element.value, "Скопійовано!");
 }
 
 function downloadKey(type) {
     const text = document.getElementById(`${type}-key-display`).value;
     if(!text) return;
-
-    const blob = new Blob([text], {type: "text/plain"});
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${type}_key.pem`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-}
-
-function hexToBase64(hexstring) {
-    return btoa(hexstring.match(/\w{2}/g).map(function(a) {
-        return String.fromCharCode(parseInt(a, 16));
-    }).join(""));
+    downloadFile(text, `${type}_key.pem`, 'text/plain');
 }
