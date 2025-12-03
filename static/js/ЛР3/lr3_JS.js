@@ -1,27 +1,11 @@
+// Tabs are automatically initialized by common-utils.js
+
 document.addEventListener('DOMContentLoaded', () => {
-    initializeTabs();
     initializeEncryption();
     initializeDecryption();
 });
 
-// ==================== Вкладки ====================
-function initializeTabs() {
-    const buttons = document.querySelectorAll('.tab-btn');
-    const contents = document.querySelectorAll('.tab-content');
-
-    buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Деактивуємо все
-            buttons.forEach(b => b.classList.remove('active'));
-            contents.forEach(c => c.classList.remove('active'));
-
-            // Активуємо вибране
-            btn.classList.add('active');
-            const tabId = btn.dataset.tab;
-            document.getElementById(tabId).classList.add('active');
-        });
-    });
-}
+// Видалена функція initializeTabs - tabs auto-initialize in common-utils.js
 
 // ==================== Шифрування ====================
 function initializeEncryption() {
@@ -248,32 +232,12 @@ function setupDragAndDrop(zone, callback) {
     });
 }
 
-function formatBytes(bytes, decimals = 2) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-}
-
-function showNotification(msg, type) {
-    const notif = document.getElementById('notification');
-    const span = document.getElementById('notification-message');
-    span.textContent = msg;
-    notif.className = `notification ${type} show`;
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
-}
-
-function showLoader() {
-    document.getElementById('loader').style.display = 'block';
-}
-
-function hideLoader() {
-    document.getElementById('loader').style.display = 'none';
-}
+// Видалені дублюючі функції - використовуємо з common-utils.js:
+// - formatBytes
+// - showNotification
+// - showLoader
+// - hideLoader
+// - setupDragAndDrop
 
 /**
  * Універсальна функція збереження файлу з діалогом "Зберегти як".

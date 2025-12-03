@@ -3,6 +3,8 @@ let generatedSequence = [];
 let currentPage = 1;
 const itemsPerPage = 5000; // Кількість елементів на сторінці
 
+// Tabs are automatically initialized by common-utils.js
+
 // Функція для відображення поточної сторінки послідовності
 function renderSequencePage() {
     const seqDiv = document.getElementById('gen-sequence');
@@ -52,20 +54,7 @@ function goToPage(page) {
     document.getElementById('gen-sequence').scrollTop = 0;
 }
 
-// Функція перемикання вкладок
-function switchTab(tabName) {
-    // Приховати всі вкладки
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // Показати вибрану вкладку
-    document.getElementById(tabName).classList.add('active');
-    event.currentTarget.classList.add('active');
-}
+// Видалена функція switchTab - використовуємо initializeTabs з common-utils.js
 
 // Оновлена функція генерації чисел
 async function generateNumbers() {
