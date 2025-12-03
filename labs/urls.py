@@ -27,4 +27,10 @@ urlpatterns = [
     path('lab3/', views.lab3_rc5, name='lab3'),
     path('lab3/encrypt/', views.rc5_encrypt, name='rc5_encrypt'),
     path('lab3/decrypt/', views.rc5_decrypt, name='rc5_decrypt'),
+
+    # Лабораторна робота 4 - RSA
+    path('lab4/', views.lab4_rsa, name='lab4'),
+    path('lab4/generate-keys/', views.rsa_generate_keys, name='rsa_generate_keys'),
+    path('lab4/encrypt/', views.rsa_encrypt, name='rsa_encrypt'),
+    path('lab4/decrypt/', views.rsa_decrypt, name='rsa_decrypt'),
 ]

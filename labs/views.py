@@ -14,7 +14,9 @@ from .algoritm.LR1 import (
     FrequencyTest,
     RunsTest)
 from .algoritm.LR2 import MD5
-from .algoritm.LR3 import RC5
+from .algoritm.LR4 import RSAEngine
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 
 
 def index(request):
@@ -36,6 +38,12 @@ def index(request):
             'title': 'Створення програмного засобу для забезбечення конфідеційності інформації',
             'description': 'Реалізація алгоритму шифрування інформацій RC5',
             'url': 'lab3/',
+        },
+        {
+            'number': 4,
+            'title': 'Створення програмної реалізації алгоритму шифрування з відкритим ключем rsa з використанням криптографічних бібліотек',
+            'description': 'Генерація ключів, шифрування та дешифрування даних алгоритмом RSA',
+            'url': 'lab4/',
         }
     ]
 
@@ -590,3 +598,209 @@ def rc5_decrypt(request):
             return JsonResponse({'error': f"Помилка дешифрування: {str(e)}"}, status=500)
 
     return JsonResponse({'error': 'Дозволено тільки POST запити'}, status=405)
+
+# ==================== Лабораторна робота 4 (RSA) ====================
+
+def lab4_rsa(request):
+    """Головна сторінка ЛР4"""
+    context = {'title': 'Лабораторна робота 4: RSA'}
+    return render(request, 'labs/lab4/index.html', context)
+
+
+def rsa_generate_keys(request):
+    """Генерація пари ключів RSA"""
+    if request.method == 'POST':
+        try:
+            start_time = time.time()
+            data = json.loads(request.body)
+            key_size = int(data.get('key_size', 2048))
+            password = data.get('password', '')
+
+            # Ініціалізація
+            engine = RSAEngine(key_size=key_size)
+            private_key_obj, public_key_obj = engine.generate_keys()
+
+            # Серіалізація приватного ключа
+            if password:
+                encryption_algorithm = serialization.BestAvailableEncryption(password.encode('utf-8'))
+            else:
+                encryption_algorithm = serialization.NoEncryption()
+
+            pem_private = private_key_obj.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=encryption_algorithm
+            )
+
+            # Серіалізація публічного ключа
+            pem_public = public_key_obj.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
+            response = {
+                'success': True,
+                'private_key': pem_private.decode('utf-8'),
+                'public_key': pem_public.decode('utf-8'),
+                'key_size': key_size,
+                'execution_time_ms': duration_ms
+            }
+            return JsonResponse(response)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@csrf_exempt
+def rsa_encrypt(request):
+    """Шифрування даних публічним ключем"""
+    if request.method == 'POST':
+        try:
+            start_time = time.time()
+
+            # Отримання даних для шифрування
+            input_data = b''
+            filename = 'encrypted_file.bin'
+
+            if 'file' in request.FILES:
+                file_obj = request.FILES['file']
+                input_data = file_obj.read()
+                filename = file_obj.name + '.enc'
+            elif 'text' in request.POST:
+                text = request.POST.get('text', '')
+                if not text:
+                    return JsonResponse({'error': 'Empty text'}, status=400)
+                input_data = text.encode('utf-8')
+            else:
+                return JsonResponse({'error': 'No data provided'}, status=400)
+
+            # Отримання публічного ключа
+            public_key_pem = None
+            if 'public_key_file' in request.FILES:
+                public_key_pem = request.FILES['public_key_file'].read()
+            elif 'public_key_text' in request.POST:
+                public_key_pem = request.POST.get('public_key_text', '').encode('utf-8')
+
+            if not public_key_pem:
+                return JsonResponse({'error': 'Public key is required'}, status=400)
+
+            # Завантаження ключа
+            try:
+                loaded_public_key = serialization.load_pem_public_key(
+                    public_key_pem,
+                    backend=default_backend()
+                )
+            except Exception as e:
+                return JsonResponse({'error': f'Invalid Public Key: {str(e)}'}, status=400)
+
+            # Шифрування
+            engine = RSAEngine(key_size=loaded_public_key.key_size)
+            engine.public_key = loaded_public_key  # Вручну встановлюємо ключ
+
+            encrypted_data = engine.encrypt_data(input_data)
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
+            response = {
+                'success': True,
+                'filename': filename,
+                'original_size': len(input_data),
+                'encrypted_size': len(encrypted_data),
+                'encrypted_hex': encrypted_data.hex(),
+                'execution_time_ms': duration_ms
+            }
+            return JsonResponse(response)
+
+        except Exception as e:
+            return JsonResponse({'error': f"Encryption error: {str(e)}"}, status=500)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@csrf_exempt
+def rsa_decrypt(request):
+    """Дешифрування даних приватним ключем"""
+    if request.method == 'POST':
+        try:
+            start_time = time.time()
+
+            # Отримання даних
+            encrypted_data = b''
+            filename = 'decrypted_file'
+
+            if 'file' in request.FILES:
+                file_obj = request.FILES['file']
+                encrypted_data = file_obj.read()
+                filename = file_obj.name.replace('.enc', '').replace('.bin', '')
+            elif 'encrypted_hex' in request.POST:
+                hex_data = request.POST.get('encrypted_hex', '').strip()
+                try:
+                    encrypted_data = bytes.fromhex(hex_data)
+                except ValueError:
+                    return JsonResponse({'error': 'Invalid HEX format'}, status=400)
+            else:
+                return JsonResponse({'error': 'No data provided'}, status=400)
+
+            # Отримання приватного ключа
+            private_key_pem = None
+            if 'private_key_file' in request.FILES:
+                private_key_pem = request.FILES['private_key_file'].read()
+            elif 'private_key_text' in request.POST:
+                private_key_pem = request.POST.get('private_key_text', '').encode('utf-8')
+
+            if not private_key_pem:
+                return JsonResponse({'error': 'Private key is required'}, status=400)
+
+            # Пароль до ключа
+            password = request.POST.get('password', None)
+            password_bytes = password.encode('utf-8') if password else None
+
+            # Завантаження ключа
+            try:
+                loaded_private_key = serialization.load_pem_private_key(
+                    private_key_pem,
+                    password=password_bytes,
+                    backend=default_backend()
+                )
+            except Exception as e:
+                return JsonResponse({'error': f'Invalid Private Key or Password: {str(e)}'}, status=400)
+
+            # Дешифрування
+            engine = RSAEngine(key_size=loaded_private_key.key_size)
+            engine.private_key = loaded_private_key
+
+            decrypted_data = engine.decrypt_data(encrypted_data)
+
+            end_time = time.time()
+            duration_ms = (end_time - start_time) * 1000
+
+            # Спроба декодування тексту
+            is_text = False
+            text_preview = "Бінарні дані"
+            try:
+                text_preview = decrypted_data.decode('utf-8')
+                is_text = True
+            except UnicodeDecodeError:
+                pass
+
+            response = {
+                'success': True,
+                'filename': filename,
+                'decrypted_size': len(decrypted_data),
+                'is_text': is_text,
+                'text_preview': text_preview,
+                'decrypted_hex': decrypted_data.hex(),
+                'execution_time_ms': duration_ms
+            }
+            return JsonResponse(response)
+
+        except Exception as e:
+            return JsonResponse({'error': f"Decryption error: {str(e)}"}, status=500)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
