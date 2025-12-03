@@ -4,13 +4,22 @@ let decryptedBlobUrl = null;
 
 // Ініціалізація слухачів подій при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', () => {
-    initializeTabs(); // Використовуємо функцію з common-utils.js
     setupFileUploads();
 });
 
 // --- UI Functions ---
 
-// Видалена функція switchTab - використовуємо initializeTabs з common-utils.js
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+    document.getElementById(tabId).classList.add('active');
+    // Знаходимо кнопку, яка відповідає цій вкладці (простий пошук по тексту або індексу)
+    const btns = document.querySelectorAll('.tab-btn');
+    if(tabId === 'keys-tab') btns[0].classList.add('active');
+    if(tabId === 'encrypt-tab') btns[1].classList.add('active');
+    if(tabId === 'decrypt-tab') btns[2].classList.add('active');
+}
 
 function toggleKeyInput(mode, type) {
     const textContainer = document.getElementById(`${mode}-key-text-container`);
@@ -47,11 +56,17 @@ function setupFileUploads() {
     });
 }
 
-// Видалені дублюючі функції - використовуємо з common-utils.js:
-// - showLoader
-// - hideLoader
-// - formatBytes
-// - copyText
+function showLoader() { document.getElementById('loader').style.display = 'block'; }
+function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+
+function formatBytes(bytes, decimals = 2) {
+    if (!+bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
 
 // --- API Functions ---
 
@@ -256,14 +271,29 @@ async function decryptData() {
     }
 }
 
-// Helpers - copyText використовується з common-utils.js
+// Helpers
+function copyText(elementId) {
+    const copyText = document.getElementById(elementId);
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        alert("Скопійовано!");
+    });
+}
 
 function downloadKey(type) {
     const text = document.getElementById(`${type}-key-display`).value;
     if(!text) return;
 
-    // Використовуємо downloadTextAsFile з common-utils.js
-    downloadTextAsFile(text, `${type}_key.pem`, "text/plain");
+    const blob = new Blob([text], {type: "text/plain"});
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${type}_key.pem`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
 }
 
 function hexToBase64(hexstring) {
