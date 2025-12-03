@@ -1,29 +1,13 @@
+// ==================== Lab 3: RC5 Encryption ====================
+// Uses common utilities from common.js
+
 document.addEventListener('DOMContentLoaded', () => {
     initializeTabs();
     initializeEncryption();
     initializeDecryption();
 });
 
-// ==================== Вкладки ====================
-function initializeTabs() {
-    const buttons = document.querySelectorAll('.tab-btn');
-    const contents = document.querySelectorAll('.tab-content');
-
-    buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Деактивуємо все
-            buttons.forEach(b => b.classList.remove('active'));
-            contents.forEach(c => c.classList.remove('active'));
-
-            // Активуємо вибране
-            btn.classList.add('active');
-            const tabId = btn.dataset.tab;
-            document.getElementById(tabId).classList.add('active');
-        });
-    });
-}
-
-// ==================== Шифрування ====================
+// ==================== Encryption ====================
 function initializeEncryption() {
     const fileInput = document.getElementById('encrypt-file-input');
     const dropZone = document.getElementById('encrypt-drop-zone');
@@ -32,24 +16,21 @@ function initializeEncryption() {
     const encryptBtn = document.getElementById('btn-encrypt');
     let selectedFile = null;
 
-    // Обробка вибору файлу
     const handleFile = (file) => {
         selectedFile = file;
         document.getElementById('encrypt-file-name').textContent = file.name;
         document.getElementById('encrypt-file-size').textContent = formatBytes(file.size);
         document.getElementById('encrypt-file-info').style.display = 'flex';
         document.querySelector('#encrypt-drop-zone .file-upload-content').style.display = 'none';
-        textInput.disabled = true; // Блокуємо ввід тексту, якщо вибрано файл
+        textInput.disabled = true;
     };
 
     fileInput.addEventListener('change', (e) => {
         if (e.target.files[0]) handleFile(e.target.files[0]);
     });
 
-    // Drag & Drop
     setupDragAndDrop(dropZone, handleFile);
 
-    // Очистка файлу, якщо почали вводити текст
     textInput.addEventListener('input', () => {
         if (textInput.value.length > 0 && selectedFile) {
             selectedFile = null;
@@ -60,7 +41,6 @@ function initializeEncryption() {
         }
     });
 
-    // Клік по кнопці Шифрувати
     encryptBtn.addEventListener('click', async () => {
         const password = passwordInput.value;
         if (!password) {
@@ -112,15 +92,13 @@ function displayEncryptResult(data) {
     document.getElementById('encrypt-output-size').textContent = formatBytes(data.encrypted_size);
     document.getElementById('encrypt-time').textContent = data.execution_time_ms.toFixed(2) + ' мс';
 
-    // Логіка скачування
     const downloadBtn = document.getElementById('btn-download-encrypted');
     downloadBtn.onclick = () => {
-        // Викликаємо нову функцію збереження з діалогом
         saveFileWithDialog(data.encrypted_data_full_hex, data.filename, 'hex');
     };
 }
 
-// ==================== Дешифрування ====================
+// ==================== Decryption ====================
 function initializeDecryption() {
     const fileInput = document.getElementById('decrypt-file-input');
     const dropZone = document.getElementById('decrypt-drop-zone');
@@ -171,7 +149,7 @@ function initializeDecryption() {
         if (selectedFile) {
             formData.append('file', selectedFile);
         } else {
-            formData.append('encrypted_hex', hexInput.value.replace(/\s+/g, '')); // Видаляємо пробіли
+            formData.append('encrypted_hex', hexInput.value.replace(/\s+/g, ''));
         }
 
         try {
@@ -200,7 +178,6 @@ function displayDecryptResult(data) {
     const container = document.getElementById('decrypt-result');
     container.style.display = 'block';
 
-    // Текстове або бінарне прев'ю
     const textContainer = document.getElementById('decrypt-text-container');
     const hexContainer = document.getElementById('decrypt-hex-container');
 
@@ -217,84 +194,28 @@ function displayDecryptResult(data) {
     document.getElementById('decrypt-size').textContent = formatBytes(data.decrypted_size);
     document.getElementById('decrypt-time').textContent = data.execution_time_ms.toFixed(2) + ' мс';
 
-    // Завантаження
     const downloadBtn = document.getElementById('btn-download-decrypted');
     downloadBtn.onclick = () => {
         if (data.is_text) {
-            // Викликаємо функцію збереження для тексту
             saveFileWithDialog(data.decrypted_text_full, data.filename + '.txt', 'text');
         } else {
-            // Викликаємо функцію збереження для бінарних даних (hex)
             saveFileWithDialog(data.decrypted_hex, data.filename, 'hex');
         }
     };
 }
 
-
-// ==================== Допоміжні функції ====================
-
-function setupDragAndDrop(zone, callback) {
-    zone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        zone.classList.add('drag-over');
-    });
-    zone.addEventListener('dragleave', () => {
-        zone.classList.remove('drag-over');
-    });
-    zone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        zone.classList.remove('drag-over');
-        if (e.dataTransfer.files[0]) callback(e.dataTransfer.files[0]);
-    });
-}
-
-function formatBytes(bytes, decimals = 2) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-}
-
-function showNotification(msg, type) {
-    const notif = document.getElementById('notification');
-    const span = document.getElementById('notification-message');
-    span.textContent = msg;
-    notif.className = `notification ${type} show`;
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
-}
-
-function showLoader() {
-    document.getElementById('loader').style.display = 'block';
-}
-
-function hideLoader() {
-    document.getElementById('loader').style.display = 'none';
-}
-
-/**
- * Універсальна функція збереження файлу з діалогом "Зберегти як".
- * @param {string} data - Дані для збереження (HEX-рядок або текст).
- * @param {string} filename - Пропоноване ім'я файлу.
- * @param {string} type - Тип даних: 'hex' (для бінарних файлів) або 'text' (для текстових).
- */
+// ==================== File Save with Dialog ====================
 async function saveFileWithDialog(data, filename, type) {
     let blob;
 
     if (type === 'hex') {
-        // Конвертуємо HEX у байти
         const bytes = new Uint8Array(data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
         blob = new Blob([bytes], { type: "application/octet-stream" });
     } else {
-        // Текстові дані
         blob = new Blob([data], { type: "text/plain;charset=utf-8" });
     }
 
     try {
-        // Перевірка підтримки File System Access API
         if ('showSaveFilePicker' in window) {
             const options = {
                 suggestedName: filename,
@@ -310,23 +231,18 @@ async function saveFileWithDialog(data, filename, type) {
             await writable.close();
             showNotification('Файл успішно збережено!', 'success');
         } else {
-            // Fallback для браузерів без підтримки API (автоматичне завантаження)
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
             link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            window.URL.revokeObjectURL(link.href); // Очистка пам'яті
+            window.URL.revokeObjectURL(link.href);
         }
     } catch (err) {
-        // Ігноруємо помилку, якщо користувач скасував діалог
         if (err.name !== 'AbortError') {
             console.error('Помилка збереження:', err);
             showNotification('Не вдалося зберегти файл', 'error');
         }
     }
 }
-
-// Старі функції downloadHexAsBinary та downloadTextFile більше не потрібні,
-// оскільки їх логіку об'єднано в saveFileWithDialog

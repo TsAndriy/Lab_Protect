@@ -9,9 +9,9 @@
     {% for lab in labs %}
     <div class="card">
         <h3>Лабораторна робота №{{ lab.number }}</h3>
-        <p style="margin: 15px 0; color: #6b7280;">{{ lab.description }}</p>
+        <p class="info-text">{{ lab.description }}</p>
 
-        <div style="margin-top: 20px;">
+        <div class="button-group">
             <a href="{{ lab.url }}" class="btn">
                 Перейти до роботи
             </a>
