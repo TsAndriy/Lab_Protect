@@ -50,7 +50,7 @@ function setupDragAndDrop(dropZone, handleFileCallback) {
 
 // ==================== File Size Formatting ====================
 function formatBytes(bytes, decimals = 2) {
-    if (!+bytes || bytes === 0) return '0 Bytes';
+    if (bytes == null || bytes === 0) return '0 Bytes';
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -166,7 +166,7 @@ function downloadFile(content, filename, mimeType = 'text/plain') {
 function hexToBytes(hex) {
     const bytes = [];
     for (let i = 0; i < hex.length; i += 2) {
-        bytes.push(parseInt(hex.substr(i, 2), 16));
+        bytes.push(parseInt(hex.substring(i, i + 2), 16));
     }
     return new Uint8Array(bytes);
 }
