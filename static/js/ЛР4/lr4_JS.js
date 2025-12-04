@@ -221,12 +221,12 @@ async function decryptData() {
 
 // Helpers - copyText використовується з common-utils.js
 
-function downloadKey(type) {
+async function downloadKey(type) {
     const text = document.getElementById(`${type}-key-display`).value;
     if(!text) return;
 
-    // Використовуємо downloadTextAsFile з common-utils.js
-    downloadTextAsFile(text, `${type}_key.pem`, "text/plain");
+    // Використовуємо downloadTextAsFile з common-utils.js (тепер async)
+    await downloadTextAsFile(text, `${type}_key.pem`, "text/plain");
 }
 
 function hexToBase64(hexstring) {

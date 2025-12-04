@@ -307,9 +307,9 @@ async function exportHash(hash, filename) {
 
         if (response.ok) {
             const blob = await response.blob();
-            // Використовуємо функцію downloadBlob з common-utils.js
-            downloadBlob(blob, `${filename}.md5.txt`);
-            showNotification('Хеш успішно експортовано!', 'success');
+            // Використовуємо функцію downloadBlob з common-utils.js (тепер async)
+            await downloadBlob(blob, `${filename}.md5.txt`);
+            // Notification показується всередині downloadBlob
         } else {
             showNotification('Помилка експорту', 'error');
         }
