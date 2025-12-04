@@ -1,7 +1,3 @@
-// Глобальні змінні для збереження блобів завантаження
-let encryptedBlobUrl = null;
-let decryptedBlobUrl = null;
-
 // Ініціалізація слухачів подій при завантаженні сторінки
 // Tabs are automatically initialized by common-utils.js
 
@@ -131,26 +127,10 @@ async function encryptData() {
             document.getElementById('enc-time').textContent = result.execution_time_ms.toFixed(2) + ' ms';
             document.getElementById('enc-hex-preview').textContent = result.encrypted_hex.substring(0, 100) + '...';
 
-            // Setup download
-            const byteCharacters = atob(hexToBase64(result.encrypted_hex));
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], {type: "application/octet-stream"});
-
-            if (encryptedBlobUrl) window.URL.revokeObjectURL(encryptedBlobUrl);
-            encryptedBlobUrl = window.URL.createObjectURL(blob);
-
+            // Setup download using saveFileWithDialog
             const dlBtn = document.getElementById('btn-download-enc');
-            dlBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = encryptedBlobUrl;
-                a.download = result.filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            dlBtn.onclick = async () => {
+                await saveFileWithDialog(result.encrypted_hex, result.filename, 'hex');
             };
         } else {
             alert('Error: ' + result.error);
@@ -219,32 +199,14 @@ async function decryptData() {
                 previewArea.value = "Увага: Дані бінарні. Показано HEX:\n" + result.decrypted_hex;
             }
 
-            // Setup download
-            // Якщо це текст, створюємо текстовий блоб, інакше бінарний з HEX
-            let blob;
-            if (result.is_text) {
-                blob = new Blob([result.text_preview], {type: "text/plain"});
-            } else {
-                const byteCharacters = atob(hexToBase64(result.decrypted_hex));
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                blob = new Blob([byteArray], {type: "application/octet-stream"});
-            }
-
-            if (decryptedBlobUrl) window.URL.revokeObjectURL(decryptedBlobUrl);
-            decryptedBlobUrl = window.URL.createObjectURL(blob);
-
+            // Setup download using saveFileWithDialog
             const dlBtn = document.getElementById('btn-download-dec');
-            dlBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = decryptedBlobUrl;
-                a.download = result.filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            dlBtn.onclick = async () => {
+                if (result.is_text) {
+                    await saveFileWithDialog(result.text_preview, result.filename, 'text');
+                } else {
+                    await saveFileWithDialog(result.decrypted_hex, result.filename, 'hex');
+                }
             };
 
         } else {

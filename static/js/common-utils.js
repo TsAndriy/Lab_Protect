@@ -163,13 +163,41 @@ function formatBytes(bytes, decimals = 2) {
 }
 
 /**
- * Завантажує текст як файл
+ * Завантажує текст як файл з діалогом вибору місця збереження
  * @param {string} content - Вміст файлу
  * @param {string} filename - Ім'я файлу
  * @param {string} mimeType - MIME тип файлу
  */
-function downloadTextAsFile(content, filename, mimeType = 'text/plain') {
+async function downloadTextAsFile(content, filename, mimeType = 'text/plain') {
     const blob = new Blob([content], { type: mimeType });
+    
+    try {
+        // Спробувати використати File System Access API для діалогу збереження
+        if ('showSaveFilePicker' in window) {
+            const extension = filename.split('.').pop();
+            const options = {
+                suggestedName: filename,
+                types: [{
+                    description: 'Text File',
+                    accept: { [mimeType]: ['.' + extension] }
+                }]
+            };
+            
+            const handle = await window.showSaveFilePicker(options);
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            showNotification('Файл успішно збережено!', 'success');
+            return;
+        }
+    } catch (err) {
+        // Користувач скасував діалог або браузер не підтримує API
+        if (err.name === 'AbortError') {
+            return; // Просто виходимо, якщо користувач скасував
+        }
+    }
+    
+    // Fallback: автоматичне завантаження без діалогу
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -181,11 +209,38 @@ function downloadTextAsFile(content, filename, mimeType = 'text/plain') {
 }
 
 /**
- * Завантажує бінарні дані як файл
+ * Завантажує бінарні дані як файл з діалогом вибору місця збереження
  * @param {Blob} blob - Об'єкт Blob з даними
  * @param {string} filename - Ім'я файлу
  */
-function downloadBlob(blob, filename) {
+async function downloadBlob(blob, filename) {
+    try {
+        // Спробувати використати File System Access API для діалогу збереження
+        if ('showSaveFilePicker' in window) {
+            const extension = filename.split('.').pop();
+            const options = {
+                suggestedName: filename,
+                types: [{
+                    description: 'File',
+                    accept: { 'application/octet-stream': ['.' + extension] }
+                }]
+            };
+            
+            const handle = await window.showSaveFilePicker(options);
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            showNotification('Файл успішно збережено!', 'success');
+            return;
+        }
+    } catch (err) {
+        // Користувач скасував діалог або браузер не підтримує API
+        if (err.name === 'AbortError') {
+            return; // Просто виходимо, якщо користувач скасував
+        }
+    }
+    
+    // Fallback: автоматичне завантаження без діалогу
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -194,6 +249,62 @@ function downloadBlob(blob, filename) {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Універсальна функція збереження файлу з діалогом "Зберегти як"
+ * @param {string} data - Дані для збереження (HEX-рядок або текст)
+ * @param {string} filename - Пропоноване ім'я файлу
+ * @param {string} type - Тип даних: 'hex' (для бінарних файлів) або 'text' (для текстових)
+ */
+async function saveFileWithDialog(data, filename, type) {
+    let blob;
+
+    if (type === 'hex') {
+        // Конвертуємо HEX у байти
+        const bytes = new Uint8Array(data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+        blob = new Blob([bytes], { type: "application/octet-stream" });
+    } else {
+        // Текстові дані
+        blob = new Blob([data], { type: "text/plain;charset=utf-8" });
+    }
+
+    try {
+        // Перевірка підтримки File System Access API
+        if ('showSaveFilePicker' in window) {
+            const extension = filename.split('.').pop();
+            const options = {
+                suggestedName: filename,
+                types: [{
+                    description: type === 'hex' ? 'Binary File' : 'Text File',
+                    accept: type === 'hex' 
+                        ? {'application/octet-stream': ['.' + extension, '.bin', '.rc5']} 
+                        : {'text/plain': ['.' + extension, '.txt']}
+                }]
+            };
+
+            const handle = await window.showSaveFilePicker(options);
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            showNotification('Файл успішно збережено!', 'success');
+        } else {
+            // Fallback для браузерів без підтримки API
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(link.href);
+        }
+    } catch (err) {
+        // Ігноруємо помилку, якщо користувач скасував діалог
+        if (err.name !== 'AbortError') {
+            console.error('Помилка збереження:', err);
+            showNotification('Не вдалося зберегти файл', 'error');
+        }
+    }
 }
 
 // ==================== Робота з буфером обміну ====================
@@ -380,6 +491,7 @@ if (typeof module !== 'undefined' && module.exports) {
         formatBytes,
         downloadTextAsFile,
         downloadBlob,
+        saveFileWithDialog,
         copyToClipboard,
         copyText,
         arrayBufferToHex,
