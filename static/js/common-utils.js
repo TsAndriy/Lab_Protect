@@ -177,7 +177,7 @@ async function saveFileWithDialog(data, filename, options = {}) {
     const {
         mimeType = 'text/plain',
         description = 'File',
-        accept = { 'application/octet-stream': ['.*'] }
+        accept = { '*/*': ['*'] }
     } = options;
 
     // Створюємо Blob якщо отримали текст
