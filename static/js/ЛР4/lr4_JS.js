@@ -1,7 +1,3 @@
-// Глобальні змінні для збереження блобів завантаження
-let encryptedBlobUrl = null;
-let decryptedBlobUrl = null;
-
 // Ініціалізація слухачів подій при завантаженні сторінки
 // Tabs are automatically initialized by common-utils.js
 
@@ -140,17 +136,9 @@ async function encryptData() {
             const byteArray = new Uint8Array(byteNumbers);
             const blob = new Blob([byteArray], {type: "application/octet-stream"});
 
-            if (encryptedBlobUrl) window.URL.revokeObjectURL(encryptedBlobUrl);
-            encryptedBlobUrl = window.URL.createObjectURL(blob);
-
             const dlBtn = document.getElementById('btn-download-enc');
             dlBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = encryptedBlobUrl;
-                a.download = result.filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                downloadBlob(blob, result.filename);
             };
         } else {
             alert('Error: ' + result.error);
@@ -234,17 +222,9 @@ async function decryptData() {
                 blob = new Blob([byteArray], {type: "application/octet-stream"});
             }
 
-            if (decryptedBlobUrl) window.URL.revokeObjectURL(decryptedBlobUrl);
-            decryptedBlobUrl = window.URL.createObjectURL(blob);
-
             const dlBtn = document.getElementById('btn-download-dec');
             dlBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = decryptedBlobUrl;
-                a.download = result.filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                downloadBlob(blob, result.filename);
             };
 
         } else {
