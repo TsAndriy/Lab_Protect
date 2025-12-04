@@ -168,8 +168,37 @@ function formatBytes(bytes, decimals = 2) {
  * @param {string} filename - Ім'я файлу
  * @param {string} mimeType - MIME тип файлу
  */
-function downloadTextAsFile(content, filename, mimeType = 'text/plain') {
+async function downloadTextAsFile(content, filename, mimeType = 'text/plain') {
     const blob = new Blob([content], { type: mimeType });
+    
+    // Перевіряємо підтримку File System Access API
+    if ('showSaveFilePicker' in window) {
+        try {
+            // Визначаємо розширення файлу
+            const extension = filename.includes('.') ? '.' + filename.split('.').pop() : '.txt';
+            
+            const handle = await window.showSaveFilePicker({
+                suggestedName: filename,
+                types: [{
+                    description: 'Text Files',
+                    accept: { [mimeType]: [extension] }
+                }]
+            });
+            
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+        } catch (err) {
+            // Користувач скасував діалог або виникла помилка
+            if (err.name !== 'AbortError') {
+                console.error('Error saving file:', err);
+            }
+            return;
+        }
+    }
+    
+    // Fallback для старих браузерів
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -185,7 +214,43 @@ function downloadTextAsFile(content, filename, mimeType = 'text/plain') {
  * @param {Blob} blob - Об'єкт Blob з даними
  * @param {string} filename - Ім'я файлу
  */
-function downloadBlob(blob, filename) {
+async function downloadBlob(blob, filename) {
+    // Перевіряємо підтримку File System Access API
+    if ('showSaveFilePicker' in window) {
+        try {
+            // Визначаємо розширення файлу
+            const extension = filename.includes('.') ? '.' + filename.split('.').pop() : '';
+            
+            // Налаштовуємо типи файлів відповідно до MIME типу blob
+            const accept = {};
+            if (blob.type) {
+                accept[blob.type] = extension ? [extension] : [];
+            } else {
+                accept['application/octet-stream'] = extension ? [extension] : [];
+            }
+            
+            const handle = await window.showSaveFilePicker({
+                suggestedName: filename,
+                types: [{
+                    description: 'Files',
+                    accept: accept
+                }]
+            });
+            
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+        } catch (err) {
+            // Користувач скасував діалог або виникла помилка
+            if (err.name !== 'AbortError') {
+                console.error('Error saving file:', err);
+            }
+            return;
+        }
+    }
+    
+    // Fallback для старих браузерів
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
