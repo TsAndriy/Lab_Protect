@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/unit-tests.css' %}">
+{% endblock %}
 
 {% block content %}
 <h2>{{ title }}</h2>
@@ -11,6 +16,7 @@
         <button class="tab-btn" data-tab="period">Період</button>
         <button class="tab-btn" data-tab="cesaro">Тест Чезаро</button>
         <button class="tab-btn" data-tab="random">Тести випадковості</button>
+        <button class="tab-btn" data-tab="unit-tests">Unit-тести</button>
     </div>
 
     <!-- Вкладка генерації -->
@@ -122,7 +128,26 @@
             </div>
         </div>
     </div>
+    
+    <!-- Вкладка Unit-тестів -->
+    <div id="unit-tests" class="tab-content">
+        <div id="unit-tests-content"></div>
+    </div>
 </div>
 
-<script src="../../../static/js/ЛР1/lr1_JS.js"> </script>
+<script src="../../../static/js/ЛР1/lr1_JS.js"></script>
+<script src="{% static 'js/unit-tests.js' %}"></script>
+<script>
+    // Initialize unit tests tab when it's selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const unitTestsTab = document.querySelector('[data-tab="unit-tests"]');
+        if (unitTestsTab) {
+            unitTestsTab.addEventListener('click', function() {
+                if (!document.getElementById('unit-tests-content').innerHTML) {
+                    initializeUnitTestsTab(1);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

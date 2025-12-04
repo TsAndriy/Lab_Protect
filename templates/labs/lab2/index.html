@@ -3,6 +3,7 @@
 {% block title %}{{ title }}{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/ЛР2/LR2.css' %}">
+<link rel="stylesheet" href="{% static 'css/unit-tests.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -20,6 +21,9 @@
         </button>
         <button class="tab-btn" data-tab="rfc-tests">
             Тести RFC 1321
+        </button>
+        <button class="tab-btn" data-tab="unit-tests">
+            Unit-тести
         </button>
     </div>
 
@@ -296,8 +300,27 @@
     <div id="loader" class="loader" style="display: none;">
         <div class="loader-spinner"></div>
 </div>
+
+    <!-- Вкладка Unit-тестів -->
+    <div class="tab-content" id="unit-tests">
+        <div id="unit-tests-content"></div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/ЛР2/lr2_JS.js' %}"></script>
+<script src="{% static 'js/unit-tests.js' %}"></script>
+<script>
+    // Initialize unit tests tab when it's selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const unitTestsTab = document.querySelector('[data-tab="unit-tests"]');
+        if (unitTestsTab) {
+            unitTestsTab.addEventListener('click', function() {
+                if (!document.getElementById('unit-tests-content').innerHTML) {
+                    initializeUnitTestsTab(2);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

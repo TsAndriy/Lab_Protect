@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/ЛР3/LR3.css' %}">
+<link rel="stylesheet" href="{% static 'css/unit-tests.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -28,6 +29,9 @@
     </button>
     <button class="tab-btn" data-tab="decrypt-tab">
         Дешифрування
+    </button>
+    <button class="tab-btn" data-tab="unit-tests">
+        Unit-тести
     </button>
 </div>
 
@@ -171,8 +175,27 @@
     <span id="notification-message"></span>
 </div>
 
+<!-- Вкладка Unit-тестів -->
+<div class="tab-content" id="unit-tests">
+    <div id="unit-tests-content"></div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/ЛР3/lr3_JS.js' %}"></script>
+<script src="{% static 'js/unit-tests.js' %}"></script>
+<script>
+    // Initialize unit tests tab when it's selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const unitTestsTab = document.querySelector('[data-tab="unit-tests"]');
+        if (unitTestsTab) {
+            unitTestsTab.addEventListener('click', function() {
+                if (!document.getElementById('unit-tests-content').innerHTML) {
+                    initializeUnitTestsTab(3);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

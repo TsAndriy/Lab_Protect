@@ -33,4 +33,7 @@ urlpatterns = [
     path('lab4/generate-keys/', views.rsa_generate_keys, name='rsa_generate_keys'),
     path('lab4/encrypt/', views.rsa_encrypt, name='rsa_encrypt'),
     path('lab4/decrypt/', views.rsa_decrypt, name='rsa_decrypt'),
+    
+    # Unit тести
+    path('lab<int:lab_number>/run-tests/', views.run_unit_tests, name='run_unit_tests'),
 ]

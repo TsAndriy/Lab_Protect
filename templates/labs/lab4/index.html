@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/ЛР4/ЛР4.css' %}">
+<link rel="stylesheet" href="{% static 'css/unit-tests.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -15,6 +16,7 @@
     <button class="tab-btn active" data-tab="keys-tab">Генерація ключів</button>
     <button class="tab-btn" data-tab="encrypt-tab">Шифрування</button>
     <button class="tab-btn" data-tab="decrypt-tab">Дешифрування</button>
+    <button class="tab-btn" data-tab="unit-tests">Unit-тести</button>
 </div>
 
 <!-- Вкладка 1: Генерація ключів -->
@@ -178,8 +180,27 @@
 <!-- Loader -->
 <div id="loader" class="loader" style="display: none;"></div>
 
+<!-- Вкладка Unit-тестів -->
+<div class="tab-content" id="unit-tests">
+    <div id="unit-tests-content"></div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/ЛР4/lr4_JS.js' %}"></script>
+<script src="{% static 'js/unit-tests.js' %}"></script>
+<script>
+    // Initialize unit tests tab when it's selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const unitTestsTab = document.querySelector('[data-tab="unit-tests"]');
+        if (unitTestsTab) {
+            unitTestsTab.addEventListener('click', function() {
+                if (!document.getElementById('unit-tests-content').innerHTML) {
+                    initializeUnitTestsTab(4);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

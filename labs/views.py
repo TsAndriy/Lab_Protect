@@ -803,4 +803,114 @@ def rsa_decrypt(request):
         except Exception as e:
             return JsonResponse({'error': f"Decryption error: {str(e)}"}, status=500)
 
+
+@csrf_exempt
+def run_unit_tests(request, lab_number):
+    """
+    Запуск unit тестів для вказаної лабораторної роботи
+    """
+    import unittest
+    import sys
+    from io import StringIO
+    
+    # Мапінг лабораторних робіт до тест-кейсів
+    test_mapping = {
+        1: [
+            'labs.tests.GCDTestCase',
+            'labs.tests.LinearCongruentialGeneratorTestCase',
+            'labs.tests.CesaroTestCase',
+            'labs.tests.FrequencyTestCase',
+            'labs.tests.RunsTestCase',
+        ],
+        2: ['labs.tests.MD5TestCase'],
+        3: ['labs.tests.RC5TestCase'],
+        4: ['labs.tests.RSAEngineTestCase'],
+    }
+    
+    if lab_number not in test_mapping:
+        return JsonResponse({'error': 'Invalid lab number'}, status=400)
+    
+    try:
+        # Створюємо test suite
+        loader = unittest.TestLoader()
+        suite = unittest.TestSuite()
+        
+        # Завантажуємо тести для вказаної лабораторної
+        for test_class_name in test_mapping[lab_number]:
+            try:
+                # Імпортуємо модуль та клас
+                module_name, class_name = test_class_name.rsplit('.', 1)
+                module = __import__(module_name, fromlist=[class_name])
+                test_class = getattr(module, class_name)
+                suite.addTests(loader.loadTestsFromTestCase(test_class))
+            except Exception as e:
+                print(f"Error loading test class {test_class_name}: {e}")
+        
+        # Перехоплюємо вивід
+        stream = StringIO()
+        runner = unittest.TextTestRunner(stream=stream, verbosity=2)
+        result = runner.run(suite)
+        
+        # Збираємо детальні результати
+        tests_results = []
+        
+        # Успішні тести
+        for test in result.successes if hasattr(result, 'successes') else []:
+            tests_results.append({
+                'name': str(test),
+                'status': 'passed',
+                'message': ''
+            })
+        
+        # Невдалі тести
+        for test, traceback in result.failures:
+            tests_results.append({
+                'name': str(test),
+                'status': 'failed',
+                'message': traceback
+            })
+        
+        # Помилки
+        for test, traceback in result.errors:
+            tests_results.append({
+                'name': str(test),
+                'status': 'error',
+                'message': traceback
+            })
+        
+        # Якщо немає детальної інформації, беремо із виводу
+        if not tests_results:
+            output = stream.getvalue()
+            lines = output.split('\n')
+            for line in lines:
+                if line.strip() and (' ... ok' in line or ' ... FAIL' in line or ' ... ERROR' in line):
+                    parts = line.split(' ... ')
+                    if len(parts) >= 2:
+                        test_name = parts[0].strip()
+                        status_text = parts[1].strip()
+                        status = 'passed' if status_text == 'ok' else 'failed' if status_text == 'FAIL' else 'error'
+                        tests_results.append({
+                            'name': test_name,
+                            'status': status,
+                            'message': ''
+                        })
+        
+        response_data = {
+            'lab_number': lab_number,
+            'total_tests': result.testsRun,
+            'passed': result.testsRun - len(result.failures) - len(result.errors),
+            'failed': len(result.failures),
+            'errors': len(result.errors),
+            'tests': tests_results,
+            'output': stream.getvalue()
+        }
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'traceback': __import__('traceback').format_exc()
+        }, status=500)
+
     return JsonResponse({'error': 'Method not allowed'}, status=405)
