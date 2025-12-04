@@ -14,6 +14,7 @@ from .algoritm.LR1 import (
     FrequencyTest,
     RunsTest)
 from .algoritm.LR2 import MD5
+from .algoritm.LR3 import RC5
 from .algoritm.LR4 import RSAEngine
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
@@ -607,6 +608,7 @@ def lab4_rsa(request):
     return render(request, 'labs/lab4/index.html', context)
 
 
+@csrf_exempt
 def rsa_generate_keys(request):
     """Генерація пари ключів RSA"""
     if request.method == 'POST':

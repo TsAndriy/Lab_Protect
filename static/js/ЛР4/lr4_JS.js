@@ -1,7 +1,3 @@
-// Глобальні змінні для збереження блобів завантаження
-let encryptedBlobUrl = null;
-let decryptedBlobUrl = null;
-
 // Ініціалізація слухачів подій при завантаженні сторінки
 // Tabs are automatically initialized by common-utils.js
 
@@ -140,17 +136,13 @@ async function encryptData() {
             const byteArray = new Uint8Array(byteNumbers);
             const blob = new Blob([byteArray], {type: "application/octet-stream"});
 
-            if (encryptedBlobUrl) window.URL.revokeObjectURL(encryptedBlobUrl);
-            encryptedBlobUrl = window.URL.createObjectURL(blob);
-
             const dlBtn = document.getElementById('btn-download-enc');
-            dlBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = encryptedBlobUrl;
-                a.download = result.filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            dlBtn.onclick = async () => {
+                await saveFileWithDialog(blob, result.filename, {
+                    mimeType: 'application/octet-stream',
+                    description: 'Encrypted File',
+                    accept: { 'application/octet-stream': ['.enc', '.bin'] }
+                });
             };
         } else {
             alert('Error: ' + result.error);
@@ -234,17 +226,13 @@ async function decryptData() {
                 blob = new Blob([byteArray], {type: "application/octet-stream"});
             }
 
-            if (decryptedBlobUrl) window.URL.revokeObjectURL(decryptedBlobUrl);
-            decryptedBlobUrl = window.URL.createObjectURL(blob);
-
             const dlBtn = document.getElementById('btn-download-dec');
-            dlBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = decryptedBlobUrl;
-                a.download = result.filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            dlBtn.onclick = async () => {
+                await saveFileWithDialog(blob, result.filename, {
+                    mimeType: result.is_text ? 'text/plain' : 'application/octet-stream',
+                    description: result.is_text ? 'Text File' : 'Binary File',
+                    accept: result.is_text ? { 'text/plain': ['.txt'] } : { 'application/octet-stream': ['.*'] }
+                });
             };
 
         } else {
@@ -259,12 +247,16 @@ async function decryptData() {
 
 // Helpers - copyText використовується з common-utils.js
 
-function downloadKey(type) {
+async function downloadKey(type) {
     const text = document.getElementById(`${type}-key-display`).value;
     if(!text) return;
 
-    // Використовуємо downloadTextAsFile з common-utils.js
-    downloadTextAsFile(text, `${type}_key.pem`, "text/plain");
+    // Використовуємо saveFileWithDialog з common-utils.js для діалогу вибору місця збереження
+    await saveFileWithDialog(text, `${type}_key.pem`, {
+        mimeType: 'text/plain',
+        description: 'PEM Key File',
+        accept: { 'text/plain': ['.pem', '.key'] }
+    });
 }
 
 function hexToBase64(hexstring) {

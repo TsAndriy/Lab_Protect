@@ -307,8 +307,12 @@ async function exportHash(hash, filename) {
 
         if (response.ok) {
             const blob = await response.blob();
-            // Використовуємо функцію downloadBlob з common-utils.js
-            downloadBlob(blob, `${filename}.md5.txt`);
+            // Використовуємо функцію saveFileWithDialog з common-utils.js для діалогу збереження
+            await saveFileWithDialog(blob, `${filename}.md5.txt`, {
+                mimeType: 'text/plain',
+                description: 'MD5 Hash File',
+                accept: { 'text/plain': ['.txt', '.md5'] }
+            });
             showNotification('Хеш успішно експортовано!', 'success');
         } else {
             showNotification('Помилка експорту', 'error');

@@ -163,7 +163,72 @@ function formatBytes(bytes, decimals = 2) {
 }
 
 /**
- * Завантажує текст як файл
+ * Зберігає файл з діалоговим вікном вибору місця збереження (використовує File System Access API)
+ * З автоматичним fallback для браузерів без підтримки API
+ * @param {Blob|string} data - Дані для збереження (Blob або текстовий рядок)
+ * @param {string} filename - Рекомендоване ім'я файлу
+ * @param {Object} options - Додаткові опції
+ * @param {string} options.mimeType - MIME тип файлу (за замовчуванням 'text/plain')
+ * @param {string} options.description - Опис типу файлу
+ * @param {Object} options.accept - Об'єкт з прийнятними MIME типами та розширеннями
+ * @returns {Promise<void>}
+ */
+async function saveFileWithDialog(data, filename, options = {}) {
+    const {
+        mimeType = 'text/plain',
+        description = 'File',
+        accept = { '*/*': ['*'] }
+    } = options;
+
+    // Створюємо Blob якщо отримали текст
+    let blob;
+    if (data instanceof Blob) {
+        blob = data;
+    } else if (typeof data === 'string') {
+        blob = new Blob([data], { type: mimeType });
+    } else {
+        throw new Error('Data must be a Blob or string');
+    }
+
+    try {
+        // Перевірка підтримки File System Access API
+        if ('showSaveFilePicker' in window) {
+            const pickerOptions = {
+                suggestedName: filename,
+                types: [{
+                    description: description,
+                    accept: accept
+                }],
+            };
+
+            const handle = await window.showSaveFilePicker(pickerOptions);
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+        }
+    } catch (err) {
+        // Якщо користувач скасував діалог (AbortError), не показуємо помилку
+        if (err.name === 'AbortError') {
+            return;
+        }
+        console.warn('File System Access API failed, using fallback:', err);
+    }
+
+    // Fallback: автоматичне завантаження без діалогу
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Завантажує текст як файл (застаріла функція, використовуйте saveFileWithDialog)
+ * @deprecated Використовуйте saveFileWithDialog для кращого UX з діалогом вибору
  * @param {string} content - Вміст файлу
  * @param {string} filename - Ім'я файлу
  * @param {string} mimeType - MIME тип файлу
@@ -181,7 +246,8 @@ function downloadTextAsFile(content, filename, mimeType = 'text/plain') {
 }
 
 /**
- * Завантажує бінарні дані як файл
+ * Завантажує бінарні дані як файл (застаріла функція, використовуйте saveFileWithDialog)
+ * @deprecated Використовуйте saveFileWithDialog для кращого UX з діалогом вибору
  * @param {Blob} blob - Об'єкт Blob з даними
  * @param {string} filename - Ім'я файлу
  */
@@ -378,6 +444,7 @@ if (typeof module !== 'undefined' && module.exports) {
         showNotification,
         setupDragAndDrop,
         formatBytes,
+        saveFileWithDialog,
         downloadTextAsFile,
         downloadBlob,
         copyToClipboard,
