@@ -1,21 +1,20 @@
 {% extends 'base.html' %}
-
 {% block title %}{{ title }}{% endblock %}
-
+{% load static %}
 {% block content %}
 <h2>{{ title }}</h2>
 
 <div class="tab-container">
-    <div class="tab-buttons">
-        <button class="tab-button active" onclick="switchTab('generate')">Генерація</button>
-        <button class="tab-button" onclick="switchTab('period')">Період</button>
-        <button class="tab-button" onclick="switchTab('cesaro')">Тест Чезаро</button>
-        <button class="tab-button" onclick="switchTab('random')">Тести випадковості</button>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="generate">Генерація</button>
+        <button class="tab-btn" data-tab="period">Період</button>
+        <button class="tab-btn" data-tab="cesaro">Тест Чезаро</button>
+        <button class="tab-btn" data-tab="random">Тести випадковості</button>
     </div>
 
     <!-- Вкладка генерації -->
     <div id="generate" class="tab-content active">
-        <div class="card">
+        <div class="section">
             <h3>Параметри генератора</h3>
             <div class="grid">
                 <div class="form-group">
@@ -60,7 +59,7 @@
 
     <!-- Вкладка тестування періоду -->
     <div id="period" class="tab-content">
-        <div class="card">
+        <div class="section">
             <h3>Тестування періоду генератора</h3>
             <p style="margin: 15px 0; color: #6b7280;">
                 Період генератора - це кількість чисел до початку повторення послідовності.
@@ -79,7 +78,7 @@
 
     <!-- Вкладка тесту Чезаро -->
     <div id="cesaro" class="tab-content">
-        <div class="card">
+        <div class="section">
             <h3>Тест Чезаро для оцінки Pi</h3>
             <p style="margin: 15px 0; color: #6b7280;">
                 За теоремою Чезаро, ймовірність того, що найбільш спільний дільник (gcd) двох випадкових чисел дорівнює 1, становить 6/Pi^2.
@@ -102,7 +101,7 @@
 
     <!-- Вкладка тестів випадковості -->
     <div id="random" class="tab-content">
-        <div class="card">
+        <div class="section">
             <h3>Статистичні тести випадковості</h3>
             <p style="margin: 15px 0; color: #6b7280;">
                 Комплексне тестування включає частотний тест та тест послідовностей
@@ -123,6 +122,9 @@
         </div>
     </div>
 </div>
+    
+{% endblock %}
 
-<script src="../../../static/js/ЛР1/lr1_JS.js"> </script>
+{% block extra_js %}
+<script src="{% static 'js/ЛР1/lr1_JS.js' %}"></script>
 {% endblock %}

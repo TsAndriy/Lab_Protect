@@ -104,7 +104,7 @@ main {
     transition: all 0.3s;
 }
 
-.card:hover {
+.section:hover {
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
@@ -227,52 +227,6 @@ tr:hover {
 
 .tab-container {
     margin: 20px 0;
-}
-
-.tab-buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--border);
-}
-
-.tab-button {
-    padding: 10px 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    color: var(--dark);
-    transition: all 0.3s;
-    position: relative;
-}
-
-.tab-button.active {
-    color: var(--primary);
-}
-
-.tab-button.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--primary);
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-    animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 .code-block {

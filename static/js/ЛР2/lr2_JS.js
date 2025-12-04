@@ -4,35 +4,16 @@ let selectedFile = null;
 let verifyFile = null;
 
 // ==================== Ініціалізація ====================
+// Tabs are automatically initialized by common-utils.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    initializeTabs();
     initializeTextHash();
     initializeFileHash();
     initializeVerifyFile();
     initializeCopyButtons();
 });
 
-// ==================== Управління вкладками ====================
-
-function initializeTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.dataset.tab;
-
-            // Деактивуємо всі вкладки
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-
-            // Активуємо вибрану вкладку
-            button.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        });
-    });
-}
+// Видалена функція initializeTabs - tabs auto-initialize in common-utils.js
 
 // ==================== Хешування тексту ====================
 
@@ -112,24 +93,8 @@ function initializeFileHash() {
         handleFileSelect(e.target.files[0]);
     });
 
-    // Drag and Drop
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('drag-over');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-        const file = e.dataTransfer.files[0];
-        if (file) {
-            handleFileSelect(file);
-        }
-    });
+    // Drag and Drop - використовуємо функцію з common-utils.js
+    setupDragAndDrop(dropZone, handleFileSelect);
 
     // Видалення файлу
     // btnRemoveFile.addEventListener('click', (e) => {
@@ -173,7 +138,7 @@ function initializeFileHash() {
         document.querySelector('.file-upload-content').style.display = 'none';
         fileInfo.style.display = 'flex';
         document.getElementById('file-name').textContent = file.name;
-        document.getElementById('file-size').textContent = formatFileSize(file.size);
+        document.getElementById('file-size').textContent = formatBytes(file.size);
         btnHashFile.disabled = false;
         document.getElementById('file-result').style.display = 'none';
     }
@@ -191,7 +156,7 @@ function initializeFileHash() {
 function displayFileResult(data) {
     document.getElementById('file-hash-value').textContent = data.hash;
     document.getElementById('file-result-name').textContent = data.filename;
-    document.getElementById('file-result-size').textContent = formatFileSize(data.file_size);
+    document.getElementById('file-result-size').textContent = formatBytes(data.file_size);
     document.getElementById('file-execution-time').textContent = `${data.execution_time_ms.toFixed(2)} мс`;
     document.getElementById('file-result').style.display = 'block';
 
@@ -226,23 +191,8 @@ function initializeVerifyFile() {
     });
 
     // Drag and Drop
-    verifyDropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        verifyDropZone.classList.add('drag-over');
-    });
-
-    verifyDropZone.addEventListener('dragleave', () => {
-        verifyDropZone.classList.remove('drag-over');
-    });
-
-    verifyDropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        verifyDropZone.classList.remove('drag-over');
-        const file = e.dataTransfer.files[0];
-        if (file) {
-            handleVerifyFileSelect(file);
-        }
-    });
+    // Drag and Drop - використовуємо функцію з common-utils.js
+    setupDragAndDrop(verifyDropZone, handleVerifyFileSelect);
 
     // Видалення файлу
     // btnRemoveVerifyFile.addEventListener('click', (e) => {
@@ -324,7 +274,7 @@ function displayVerifyResult(data) {
 
     // Інформація про файл
     document.getElementById('verify-result-name').textContent = data.filename;
-    document.getElementById('verify-result-size').textContent = formatFileSize(data.file_size);
+    document.getElementById('verify-result-size').textContent = formatBytes(data.file_size);
     document.getElementById('verify-execution-time').textContent = `${data.execution_time_ms.toFixed(2)} мс`;
 
     document.getElementById('verify-result').style.display = 'block';
@@ -336,14 +286,8 @@ function initializeCopyButtons() {
     document.querySelectorAll('.btn-copy').forEach(button => {
         button.addEventListener('click', async () => {
             const targetId = button.dataset.copy;
-            const text = document.getElementById(targetId).textContent;
-
-            try {
-                await navigator.clipboard.writeText(text);
-                showNotification('Хеш скопійовано в буфер обміну!', 'success');
-            } catch (error) {
-                showNotification('Помилка копіювання', 'error');
-            }
+            // Використовуємо функцію copyText з common-utils.js
+            copyText(targetId);
         });
     });
 }
@@ -363,14 +307,8 @@ async function exportHash(hash, filename) {
 
         if (response.ok) {
             const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${filename}.md5.txt`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            // Використовуємо функцію downloadBlob з common-utils.js
+            downloadBlob(blob, `${filename}.md5.txt`);
             showNotification('Хеш успішно експортовано!', 'success');
         } else {
             showNotification('Помилка експорту', 'error');
@@ -381,30 +319,11 @@ async function exportHash(hash, filename) {
     }
 }
 
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
-
-function showLoader() {
-    document.getElementById('loader').style.display = 'flex';
-}
-
-function hideLoader() {
-    document.getElementById('loader').style.display = 'none';
-}
-
-function showNotification(message, type = 'success') {
-    const notification = document.getElementById('notification');
-    const notificationMessage = document.getElementById('notification-message');
-
-    notificationMessage.textContent = message;
-    notification.className = `notification ${type} show`;
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
-}
+// Видалені дублюючі функції - використовуємо з common-utils.js:
+// - formatBytes (було formatFileSize)
+// - showLoader
+// - hideLoader
+// - showNotification
+// - setupDragAndDrop (замість окремих обробників dragover, dragleave, drop)
+// - copyText (в initializeCopyButtons)
+// - downloadBlob (в exportHash)

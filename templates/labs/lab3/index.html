@@ -1,12 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}{{ title }}{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/ЛР3/LR3.css' %}">
 {% endblock %}
-
 {% block content %}
 <h2>{{ title }}</h2>
 
@@ -23,12 +20,8 @@
 </div>
 
 <div class="tabs">
-    <button class="tab-btn active" data-tab="encrypt-tab">
-        Шифрування
-    </button>
-    <button class="tab-btn" data-tab="decrypt-tab">
-        Дешифрування
-    </button>
+    <button class="tab-btn active" data-tab="encrypt-tab">Шифрування</button>
+    <button class="tab-btn" data-tab="decrypt-tab">Дешифрування</button>
 </div>
 
 <!-- Вкладка: Шифрування -->

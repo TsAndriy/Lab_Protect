@@ -9,292 +9,284 @@
 <h2>{{ title }}</h2>
 
 <div class="tabs">
-        <button class="tab-btn active" data-tab="hash-text">
-            Хешування тексту
-        </button>
-        <button class="tab-btn" data-tab="hash-file">
-            Хешування файлу
-        </button>
-        <button class="tab-btn" data-tab="verify-file">
-            Перевірка цілісності
-        </button>
-        <button class="tab-btn" data-tab="rfc-tests">
-            Тести RFC 1321
-        </button>
-    </div>
+    <button class="tab-btn active" data-tab="hash-text">Хешування тексту</button>
+    <button class="tab-btn" data-tab="hash-file">Хешування файлу</button>
+    <button class="tab-btn" data-tab="verify-file">Перевірка цілісності</button>
+    <button class="tab-btn" data-tab="rfc-tests">Тести RFC 1321</button>
+</div>
 
-    <!-- Вкладка: Хешування тексту -->
-    <div class="tab-content active" id="hash-text">
-        <div class="section">
-            <h2>Хешування текстового рядка</h2>
-            <p class="info-text">Введіть текст для обчислення MD5 хешу</p>
+<!-- Вкладка: Хешування тексту -->
+<div class="tab-content active" id="hash-text">
+    <div class="section">
+        <h2>Хешування текстового рядка</h2>
+        <p class="info-text">Введіть текст для обчислення MD5 хешу</p>
 
-            <div class="form-group">
-                <label for="input-text">Текст для хешування:</label>
-                <textarea
-                    id="input-text"
-                    class="form-control"
-                    rows="5"
-                    placeholder="Введіть текст..."></textarea>
-                <div class="input-info">
-                    <span>Довжина: <span id="text-length">0</span> символів</span>
+        <div class="form-group">
+            <label for="input-text">Текст для хешування:</label>
+            <textarea
+                id="input-text"
+                class="form-control"
+                rows="5"
+                placeholder="Введіть текст..."></textarea>
+            <div class="input-info">
+                <span>Довжина: <span id="text-length">0</span> символів</span>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="btn-hash-text" class="btn btn-primary">
+                Обчислити хеш
+            </button>
+            <button id="btn-clear-text" class="btn btn-secondary">
+                Очистити
+            </button>
+        </div>
+
+        <div id="text-result" class="result-container" style="display: none;">
+            <h3>Результат:</h3>
+            <div class="hash-display">
+                <label>MD5 Хеш:</label>
+                <div class="hash-value" id="text-hash-value"></div>
+                <button class="btn-copy" data-copy="text-hash-value" title="Копіювати"></button>
+            </div>
+            <div class="result-info">
+                <div class="info-item">
+                    <span class="label">Довжина тексту:</span>
+                    <span class="value" id="text-result-length"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Час виконання:</span>
+                    <span class="value" id="text-execution-time"></span>
                 </div>
             </div>
-
             <div class="button-group">
-                <button id="btn-hash-text" class="btn btn-primary">
-                    Обчислити хеш
+                <button id="btn-export-text-hash" class="btn btn-success">
+                    Експортувати хеш
                 </button>
-                <button id="btn-clear-text" class="btn btn-secondary">
-                    Очистити
-                </button>
-            </div>
-
-            <div id="text-result" class="result-container" style="display: none;">
-                <h3>Результат:</h3>
-                <div class="hash-display">
-                    <label>MD5 Хеш:</label>
-                    <div class="hash-value" id="text-hash-value"></div>
-                    <button class="btn-copy" data-copy="text-hash-value" title="Копіювати"></button>
-                </div>
-                <div class="result-info">
-                    <div class="info-item">
-                        <span class="label">Довжина тексту:</span>
-                        <span class="value" id="text-result-length"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Час виконання:</span>
-                        <span class="value" id="text-execution-time"></span>
-                    </div>
-                </div>
-                <div class="button-group">
-                    <button id="btn-export-text-hash" class="btn btn-success">
-                        Експортувати хеш
-                    </button>
-                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Вкладка: Хешування файлу -->
-    <div class="tab-content" id="hash-file">
-        <div class="section">
-            <h2>Хешування файлу</h2>
-            <p class="info-text">Виберіть файл для обчислення MD5 хешу</p>
+<!-- Вкладка: Хешування файлу -->
+<div class="tab-content" id="hash-file">
+    <div class="section">
+        <h2>Хешування файлу</h2>
+        <p class="info-text">Виберіть файл для обчислення MD5 хешу</p>
 
-            <div class="file-upload-area" id="file-drop-zone">
-                <input type="file" id="file-input" class="file-input" accept="*/*">
-                <div class="file-upload-content">
-                    <p class="upload-text">Перетягніть файл сюди або клацніть для вибору</p>
-                </div>
-                <div class="file-info" id="file-info" style="display: none;">
-                    <span id="file-name"></span>
-                    <span id="file-size"></span>
-{#                    <button class="btn-remove" id="btn-remove-file">✕</button>#}
-                </div>
+        <div class="file-upload-area" id="file-drop-zone">
+            <input type="file" id="file-input" class="file-input" accept="*/*">
+            <div class="file-upload-content">
+                <p class="upload-text">Перетягніть файл сюди або клацніть для вибору</p>
             </div>
+            <div class="file-info" id="file-info" style="display: none;">
+                <span id="file-name"></span>
+                <span id="file-size"></span>
+            </div>
+        </div>
 
-            <div class="button-group">
-                <button id="btn-hash-file" class="btn btn-primary" disabled>
-                    Обчислити хеш
+        <div class="button-group">
+            <button id="btn-hash-file" class="btn btn-primary" disabled>
+                Обчислити хеш
+            </button>
+        </div>
+
+        <div id="file-result" class="result-container" style="display: none;">
+            <h3>Результат:</h3>
+            <div class="hash-display">
+                <label>MD5 Хеш:</label>
+                <div class="hash-value" id="file-hash-value"></div>
+                <button class="btn-copy" data-copy="file-hash-value" title="Копіювати">
                 </button>
             </div>
-
-            <div id="file-result" class="result-container" style="display: none;">
-                <h3>Результат:</h3>
-                <div class="hash-display">
-                    <label>MD5 Хеш:</label>
-                    <div class="hash-value" id="file-hash-value"></div>
-                    <button class="btn-copy" data-copy="file-hash-value" title="Копіювати">
-                    </button>
+            <div class="result-info">
+                <div class="info-item">
+                    <span class="label">Ім'я файлу:</span>
+                    <span class="value" id="file-result-name"></span>
                 </div>
-                <div class="result-info">
-                    <div class="info-item">
-                        <span class="label">Ім'я файлу:</span>
-                        <span class="value" id="file-result-name"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Розмір файлу:</span>
-                        <span class="value" id="file-result-size"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Час виконання:</span>
-                        <span class="value" id="file-execution-time"></span>
-                    </div>
+                <div class="info-item">
+                    <span class="label">Розмір файлу:</span>
+                    <span class="value" id="file-result-size"></span>
                 </div>
-                <div class="button-group">
-                    <button id="btn-export-file-hash" class="btn btn-success">
-                        Експортувати хеш
-                    </button>
+                <div class="info-item">
+                    <span class="label">Час виконання:</span>
+                    <span class="value" id="file-execution-time"></span>
                 </div>
+            </div>
+            <div class="button-group">
+                <button id="btn-export-file-hash" class="btn btn-success">
+                    Експортувати хеш
+                </button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Вкладка: Перевірка цілісності -->
-    <div class="tab-content" id="verify-file">
-        <div class="section">
-            <h2>Перевірка цілісності файлу</h2>
-            <p class="info-text">Завантажте файл та введіть очікуваний MD5 хеш для перевірки</p>
+<!-- Вкладка: Перевірка цілісності -->
+<div class="tab-content" id="verify-file">
+    <div class="section">
+        <h2>Перевірка цілісності файлу</h2>
+        <p class="info-text">Завантажте файл та введіть очікуваний MD5 хеш для перевірки</p>
 
-            <div class="file-upload-area" id="verify-drop-zone">
-                <input type="file" id="verify-file-input" class="file-input" accept="*/*">
-                <div class="file-upload-content">
-                    <p class="upload-text">Перетягніть файл сюди або клацніть для вибору</p>
-                </div>
-                <div class="file-info" id="verify-file-info" style="display: none;">
-                    <span id="verify-file-name"></span>
-                    <span id="verify-file-size"></span>
+        <div class="file-upload-area" id="verify-drop-zone">
+            <input type="file" id="verify-file-input" class="file-input" accept="*/*">
+            <div class="file-upload-content">
+                <p class="upload-text">Перетягніть файл сюди або клацніть для вибору</p>
+            </div>
+            <div class="file-info" id="verify-file-info" style="display: none;">
+                <span id="verify-file-name"></span>
+                <span id="verify-file-size"></span>
 {#                    <button class="btn-remove" id="btn-remove-verify-file">✕</button>#}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="expected-hash">Очікуваний MD5 хеш:</label>
+            <input
+                type="text"
+                id="expected-hash"
+                class="form-control hash-input"
+                placeholder="Введіть MD5 хеш (32 символи)"
+                maxlength="32">
+            <div class="input-info">
+                <span>Введено: <span id="hash-length">0</span> / 32 символів</span>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="btn-verify-file" class="btn btn-primary" disabled>
+                Перевірити цілісність
+            </button>
+        </div>
+
+        <div id="verify-result" class="result-container" style="display: none;">
+            <h3>Результат перевірки:</h3>
+            <div class="verification-status" id="verification-status">
+                <span class="status-message" id="status-message"></span>
+            </div>
+            <div class="hash-comparison">
+                <div class="hash-item">
+                    <label>Очікуваний хеш:</label>
+                    <div class="hash-value" id="expected-hash-display"></div>
+                </div>
+                <div class="hash-item">
+                    <label>Фактичний хеш:</label>
+                    <div class="hash-value" id="actual-hash-display"></div>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label for="expected-hash">Очікуваний MD5 хеш:</label>
-                <input
-                    type="text"
-                    id="expected-hash"
-                    class="form-control hash-input"
-                    placeholder="Введіть MD5 хеш (32 символи)"
-                    maxlength="32">
-                <div class="input-info">
-                    <span>Введено: <span id="hash-length">0</span> / 32 символів</span>
+            <div class="result-info">
+                <div class="info-item">
+                    <span class="label">Ім'я файлу:</span>
+                    <span class="value" id="verify-result-name"></span>
                 </div>
-            </div>
-
-            <div class="button-group">
-                <button id="btn-verify-file" class="btn btn-primary" disabled>
-                    Перевірити цілісність
-                </button>
-            </div>
-
-            <div id="verify-result" class="result-container" style="display: none;">
-                <h3>Результат перевірки:</h3>
-                <div class="verification-status" id="verification-status">
-                    <span class="status-message" id="status-message"></span>
+                <div class="info-item">
+                    <span class="label">Розмір файлу:</span>
+                    <span class="value" id="verify-result-size"></span>
                 </div>
-                <div class="hash-comparison">
-                    <div class="hash-item">
-                        <label>Очікуваний хеш:</label>
-                        <div class="hash-value" id="expected-hash-display"></div>
-                    </div>
-                    <div class="hash-item">
-                        <label>Фактичний хеш:</label>
-                        <div class="hash-value" id="actual-hash-display"></div>
-                    </div>
-                </div>
-                <div class="result-info">
-                    <div class="info-item">
-                        <span class="label">Ім'я файлу:</span>
-                        <span class="value" id="verify-result-name"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Розмір файлу:</span>
-                        <span class="value" id="verify-result-size"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Час виконання:</span>
-                        <span class="value" id="verify-execution-time"></span>
-                    </div>
+                <div class="info-item">
+                    <span class="label">Час виконання:</span>
+                    <span class="value" id="verify-execution-time"></span>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Вкладка: Тести RFC 1321 -->
-    <div class="tab-content" id="rfc-tests">
-        <div class="section">
-            <h2>Тестові вектори RFC 1321</h2>
-            <p class="info-text">Перевірка правильності реалізації алгоритму MD5 за стандартними тестами</p>
+<!-- Вкладка: Тести RFC 1321 -->
+<div class="tab-content" id="rfc-tests">
+    <div class="section">
+        <h2>Тестові вектори RFC 1321</h2>
+        <p class="info-text">Перевірка правильності реалізації алгоритму MD5 за стандартними тестами</p>
 
-            <div class="test-vectors">
-                <div class="test-case">
-                    <div class="test-input">
-                        <label>Вхід:</label>
-                        <code>""</code> (порожній рядок)
-                    </div>
-                    <div class="test-expected">
-                        <label>Очікуваний хеш:</label>
-                        <code>D41D8CD98F00B204E9800998ECF8427E</code>
-                    </div>
+        <div class="test-vectors">
+            <div class="test-case">
+                <div class="test-input">
+                    <label>Вхід:</label>
+                    <code>""</code> (порожній рядок)
                 </div>
-
-                <div class="test-case">
-                    <div class="test-input">
-                        <label>Вхід:</label>
-                        <code>"a"</code>
-                    </div>
-                    <div class="test-expected">
-                        <label>Очікуваний хеш:</label>
-                        <code>0CC175B9C0F1B6A831C399E269772661</code>
-                    </div>
-                </div>
-
-                <div class="test-case">
-                    <div class="test-input">
-                        <label>Вхід:</label>
-                        <code>"abc"</code>
-                    </div>
-                    <div class="test-expected">
-                        <label>Очікуваний хеш:</label>
-                        <code>900150983CD24FB0D6963F7D28E17F72</code>
-                    </div>
-                </div>
-
-                <div class="test-case">
-                    <div class="test-input">
-                        <label>Вхід:</label>
-                        <code>"message digest"</code>
-                    </div>
-                    <div class="test-expected">
-                        <label>Очікуваний хеш:</label>
-                        <code>F96B697D7CB7938D525A2F31AAF161D0</code>
-                    </div>
-                </div>
-
-                <div class="test-case">
-                    <div class="test-input">
-                        <label>Вхід:</label>
-                        <code>"abcdefghijklmnopqrstuvwxyz"</code>
-                    </div>
-                    <div class="test-expected">
-                        <label>Очікуваний хеш:</label>
-                        <code>C3FCD3D76192E4007DFB496CCA67E13B</code>
-                    </div>
-                </div>
-
-                <div class="test-case">
-                    <div class="test-input">
-                        <label>Вхід:</label>
-                        <code>"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"</code>
-                    </div>
-                    <div class="test-expected">
-                        <label>Очікуваний хеш:</label>
-                        <code>D174AB98D277D9F5A5611C2C9F419D9F</code>
-                    </div>
-                </div>
-
-                <div class="test-case">
-                    <div class="test-input">
-                        <label>Вхід:</label>
-                        <code>"12345678901234567890123456789012345678901234567890123456789012345678901234567890"</code>
-                    </div>
-                    <div class="test-expected">
-                        <label>Очікуваний хеш:</label>
-                        <code>57EDF4A22BE3C955AC49DA2E2107B67A</code>
-                    </div>
+                <div class="test-expected">
+                    <label>Очікуваний хеш:</label>
+                    <code>D41D8CD98F00B204E9800998ECF8427E</code>
                 </div>
             </div>
-    </div>
 
-    <!-- Модальне вікно для повідомлень -->
-    <div id="notification" class="notification">
-        <span id="notification-message"></span>
-    </div>
+            <div class="test-case">
+                <div class="test-input">
+                    <label>Вхід:</label>
+                    <code>"a"</code>
+                </div>
+                <div class="test-expected">
+                    <label>Очікуваний хеш:</label>
+                    <code>0CC175B9C0F1B6A831C399E269772661</code>
+                </div>
+            </div>
 
-    <!-- Loader -->
-    <div id="loader" class="loader" style="display: none;">
-        <div class="loader-spinner"></div>
+            <div class="test-case">
+                <div class="test-input">
+                    <label>Вхід:</label>
+                    <code>"abc"</code>
+                </div>
+                <div class="test-expected">
+                    <label>Очікуваний хеш:</label>
+                    <code>900150983CD24FB0D6963F7D28E17F72</code>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <div class="test-input">
+                    <label>Вхід:</label>
+                    <code>"message digest"</code>
+                </div>
+                <div class="test-expected">
+                    <label>Очікуваний хеш:</label>
+                    <code>F96B697D7CB7938D525A2F31AAF161D0</code>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <div class="test-input">
+                    <label>Вхід:</label>
+                    <code>"abcdefghijklmnopqrstuvwxyz"</code>
+                </div>
+                <div class="test-expected">
+                    <label>Очікуваний хеш:</label>
+                    <code>C3FCD3D76192E4007DFB496CCA67E13B</code>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <div class="test-input">
+                    <label>Вхід:</label>
+                    <code>"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"</code>
+                </div>
+                <div class="test-expected">
+                    <label>Очікуваний хеш:</label>
+                    <code>D174AB98D277D9F5A5611C2C9F419D9F</code>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <div class="test-input">
+                    <label>Вхід:</label>
+                    <code>"12345678901234567890123456789012345678901234567890123456789012345678901234567890"</code>
+                </div>
+                <div class="test-expected">
+                    <label>Очікуваний хеш:</label>
+                    <code>57EDF4A22BE3C955AC49DA2E2107B67A</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно для повідомлень -->
+<div id="notification" class="notification">
+    <span id="notification-message"></span>
+</div>
+
+<!-- Loader -->
+<div id="loader" class="loader" style="display: none;">
+    <div class="loader-spinner"></div>
 </div>
 {% endblock %}
 

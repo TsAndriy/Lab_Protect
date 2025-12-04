@@ -1,34 +1,31 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}{{ title }}{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/ЛР4/ЛР4.css' %}">
 {% endblock %}
-
 {% block content %}
 <h2>{{ title }}</h2>
 
 <!-- Вкладки -->
 <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('keys-tab')">Генерація ключів</button>
-    <button class="tab-btn" onclick="switchTab('encrypt-tab')">Шифрування</button>
-    <button class="tab-btn" onclick="switchTab('decrypt-tab')">Дешифрування</button>
+    <button class="tab-btn active" data-tab="keys-tab">Генерація ключів</button>
+    <button class="tab-btn" data-tab="encrypt-tab">Шифрування</button>
+    <button class="tab-btn" data-tab="decrypt-tab">Дешифрування</button>
 </div>
 
 <!-- Вкладка 1: Генерація ключів -->
 <div id="keys-tab" class="tab-content active">
-    <div class="card">
+    <div class="section">
         <h3 class="section-title">Налаштування генерації</h3>
         <div class="grid">
             <div class="form-group">
                 <label>Розмір ключа (біт):</label>
                 <select id="key-size" class="form-control">
-                    <option value="1024">1024 (Швидко, менш надійно)</option>
+                    <option value="1024">1024</option>
                     <option value="2048" selected>2048 (Стандарт)</option>
-                    <option value="3072">3072 (Висока надійність)</option>
-                    <option value="4096">4096 (Максимальна надійність)</option>
+                    <option value="3072">3072</option>
+                    <option value="4096">4096</option>
                 </select>
             </div>
             <div class="form-group">
@@ -41,26 +38,26 @@
         <div id="keys-result" class="key-display-area" style="display: none;">
             <div class="key-box">
                 <div class="key-header">
-                    <span class="key-title">🔴 Приватний ключ (Private Key)</span>
+                    <span class="key-title">Приватний ключ (Private Key)</span>
                     <div class="button-group-sm">
                         <button class="btn btn-sm" onclick="copyText('private-key-display')">Копіювати</button>
                         <button class="btn btn-sm btn-success" onclick="downloadKey('private')">Завантажити .pem</button>
                     </div>
                 </div>
                 <textarea id="private-key-display" class="key-content" readonly></textarea>
-                <p class="text-sm text-danger mt-1">* Нікому не передавайте цей ключ!</p>
+{#                <p class="text-sm text-danger mt-1">* Нікому не передавайте цей ключ!</p>#}
             </div>
 
             <div class="key-box">
                 <div class="key-header">
-                    <span class="key-title">🟢 Публічний ключ (Public Key)</span>
+                    <span class="key-title">Публічний ключ (Public Key)</span>
                     <div class="button-group-sm">
                         <button class="btn btn-sm" onclick="copyText('public-key-display')">Копіювати</button>
                         <button class="btn btn-sm btn-success" onclick="downloadKey('public')">Завантажити .pem</button>
                     </div>
                 </div>
                 <textarea id="public-key-display" class="key-content" readonly></textarea>
-                <p class="text-sm text-muted mt-1">* Цей ключ можна вільно поширювати.</p>
+{#                <p class="text-sm text-muted mt-1">* Цей ключ можна вільно поширювати.</p>#}
             </div>
         </div>
     </div>
@@ -68,13 +65,13 @@
 
 <!-- Вкладка 2: Шифрування -->
 <div id="encrypt-tab" class="tab-content">
-    <div class="card">
+    <div class="section">
         <h3 class="section-title">1. Дані для шифрування</h3>
         
         <div class="file-upload-area" id="encrypt-file-zone">
             <input type="file" id="encrypt-file" class="file-input">
             <div class="upload-content">
-                <p>📂 Перетягніть файл сюди або клікніть для вибору</p>
+                <p>Перетягніть файл сюди або клікніть для вибору</p>
                 <span id="encrypt-filename" class="text-primary font-bold"></span>
             </div>
         </div>
@@ -83,7 +80,7 @@
         
         <div class="form-group">
             <label>Введіть текст:</label>
-            <textarea id="encrypt-text" class="form-control" rows="3" placeholder="Секретне повідомлення..."></textarea>
+            <textarea id="encrypt-text" class="form-control" rows="3"></textarea>
         </div>
 
         <h3 class="section-title mt-4">2. Публічний ключ отримувача</h3>
@@ -93,16 +90,16 @@
         </div>
 
         <div id="enc-key-text-container">
-            <textarea id="encrypt-pub-key" class="form-control key-input" rows="4" placeholder="-----BEGIN PUBLIC KEY-----..."></textarea>
+            <textarea id="encrypt-pub-key" class="form-control key-input" rows="4"></textarea>
         </div>
         <div id="enc-key-file-container" style="display: none;">
             <input type="file" id="encrypt-pub-key-file" class="form-control">
         </div>
 
-        <button class="btn btn-primary mt-4" onclick="encryptData()">🔒 Зашифрувати</button>
+        <button class="btn btn-primary mt-4" onclick="encryptData()">Зашифрувати</button>
 
         <div id="encrypt-result" class="result-box" style="display: none;">
-            <div class="result-header">✅ Успішно зашифровано!</div>
+            <div class="result-header">Успішно зашифровано!</div>
             <div class="info-grid">
                 <div class="info-item"><label>Вхідний розмір:</label><span id="enc-orig-size"></span></div>
                 <div class="info-item"><label>Розмір шифротексту:</label><span id="enc-res-size"></span></div>
@@ -110,22 +107,22 @@
             </div>
             <div class="form-group">
                 <label>HEX прев'ю:</label>
-                <div id="enc-hex-preview" class="key-content" style="height: 60px; overflow-y: hidden; text-overflow: ellipsis;"></div>
+                <div id="enc-hex-preview" class="key-content" style="height: 60px; overflow-y: hidden"></div>
             </div>
-            <button class="btn btn-success" id="btn-download-enc">📥 Завантажити зашифрований файл (.enc)</button>
+            <button class="btn btn-success" id="btn-download-enc">Завантажити зашифрований файл (.enc)</button>
         </div>
     </div>
 </div>
 
 <!-- Вкладка 3: Дешифрування -->
 <div id="decrypt-tab" class="tab-content">
-    <div class="card">
+    <div class="section">
         <h3 class="section-title">1. Зашифровані дані</h3>
         
         <div class="file-upload-area" id="decrypt-file-zone">
             <input type="file" id="decrypt-file" class="file-input">
             <div class="upload-content">
-                <p>📂 Перетягніть .enc файл сюди або клікніть</p>
+                <p>Перетягніть .enc файл сюди або клікніть</p>
                 <span id="decrypt-filename" class="text-primary font-bold"></span>
             </div>
         </div>
@@ -134,7 +131,7 @@
         
         <div class="form-group">
             <label>Вставте HEX рядок:</label>
-            <textarea id="decrypt-hex" class="form-control" rows="3" placeholder="A1B2C3..."></textarea>
+            <textarea id="decrypt-hex" class="form-control" rows="3"></textarea>
         </div>
 
         <h3 class="section-title mt-4">2. Ваш Приватний ключ</h3>
@@ -144,7 +141,7 @@
         </div>
 
         <div id="dec-key-text-container">
-            <textarea id="decrypt-priv-key" class="form-control key-input" rows="4" placeholder="-----BEGIN ENCRYPTED PRIVATE KEY-----..."></textarea>
+            <textarea id="decrypt-priv-key" class="form-control key-input" rows="4"></textarea>
         </div>
         <div id="dec-key-file-container" style="display: none;">
             <input type="file" id="decrypt-priv-key-file" class="form-control">
@@ -155,10 +152,10 @@
             <input type="password" id="decrypt-key-pass" class="form-control" placeholder="Пароль приватного ключа">
         </div>
 
-        <button class="btn btn-primary mt-4" onclick="decryptData()">🔓 Дешифрувати</button>
+        <button class="btn btn-primary mt-4" onclick="decryptData()">Дешифрувати</button>
 
         <div id="decrypt-result" class="result-box" style="display: none;">
-            <div class="result-header">✅ Успішно дешифровано!</div>
+            <div class="result-header">Успішно дешифровано!</div>
             <div class="info-grid">
                 <div class="info-item"><label>Розмір даних:</label><span id="dec-res-size"></span></div>
                 <div class="info-item"><label>Час:</label><span id="dec-time"></span></div>
@@ -170,7 +167,7 @@
                 <textarea id="dec-text-preview" class="form-control" rows="4" readonly></textarea>
             </div>
             
-            <button class="btn btn-success" id="btn-download-dec">📥 Завантажити файл</button>
+            <button class="btn btn-success" id="btn-download-dec">Завантажити файл</button>
         </div>
     </div>
 </div>

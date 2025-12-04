@@ -3,23 +3,15 @@ let encryptedBlobUrl = null;
 let decryptedBlobUrl = null;
 
 // Ініціалізація слухачів подій при завантаженні сторінки
+// Tabs are automatically initialized by common-utils.js
+
 document.addEventListener('DOMContentLoaded', () => {
     setupFileUploads();
 });
 
 // --- UI Functions ---
 
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-
-    document.getElementById(tabId).classList.add('active');
-    // Знаходимо кнопку, яка відповідає цій вкладці (простий пошук по тексту або індексу)
-    const btns = document.querySelectorAll('.tab-btn');
-    if(tabId === 'keys-tab') btns[0].classList.add('active');
-    if(tabId === 'encrypt-tab') btns[1].classList.add('active');
-    if(tabId === 'decrypt-tab') btns[2].classList.add('active');
-}
+// Видалена функція switchTab - tabs auto-initialize in common-utils.js
 
 function toggleKeyInput(mode, type) {
     const textContainer = document.getElementById(`${mode}-key-text-container`);
@@ -56,17 +48,11 @@ function setupFileUploads() {
     });
 }
 
-function showLoader() { document.getElementById('loader').style.display = 'block'; }
-function hideLoader() { document.getElementById('loader').style.display = 'none'; }
-
-function formatBytes(bytes, decimals = 2) {
-    if (!+bytes) return '0 Bytes';
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-}
+// Видалені дублюючі функції - використовуємо з common-utils.js:
+// - showLoader
+// - hideLoader
+// - formatBytes
+// - copyText
 
 // --- API Functions ---
 
@@ -143,7 +129,7 @@ async function encryptData() {
             document.getElementById('enc-orig-size').textContent = formatBytes(result.original_size);
             document.getElementById('enc-res-size').textContent = formatBytes(result.encrypted_size);
             document.getElementById('enc-time').textContent = result.execution_time_ms.toFixed(2) + ' ms';
-            document.getElementById('enc-hex-preview').textContent = result.encrypted_hex.substring(0, 100) + '...';
+            document.getElementById('enc-hex-preview').textContent = result.encrypted_hex;
 
             // Setup download
             const byteCharacters = atob(hexToBase64(result.encrypted_hex));
@@ -271,29 +257,14 @@ async function decryptData() {
     }
 }
 
-// Helpers
-function copyText(elementId) {
-    const copyText = document.getElementById(elementId);
-    copyText.select();
-    copyText.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(copyText.value).then(() => {
-        alert("Скопійовано!");
-    });
-}
+// Helpers - copyText використовується з common-utils.js
 
 function downloadKey(type) {
     const text = document.getElementById(`${type}-key-display`).value;
     if(!text) return;
 
-    const blob = new Blob([text], {type: "text/plain"});
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${type}_key.pem`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    // Використовуємо downloadTextAsFile з common-utils.js
+    downloadTextAsFile(text, `${type}_key.pem`, "text/plain");
 }
 
 function hexToBase64(hexstring) {
